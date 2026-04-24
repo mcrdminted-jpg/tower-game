@@ -815,58 +815,147 @@ function renderSubmenu() {
 
 let activeLabTab = 'combat';
 
+// v0.7.22: front-end-only classification of ranks into Combat / Defense /
+// Economy / Utility for the 4 sub-tabs painted into the Research mockup.
+// Does not change any gameplay math — purely a filter for which rank rows
+// are visible under each sub-tab.
+const RANK_CATEGORY = {
+  // Combat
+  damage: 'combat', fireRate: 'combat',
+  critChance: 'combat', critPower: 'combat',
+  multiChance: 'combat', multiPower: 'combat', multiTargets: 'combat',
+  bounceChance: 'combat', bouncePower: 'combat', bounceTargets: 'combat',
+  // Defense
+  coreHealth: 'defense', armor: 'defense', range: 'defense',
+  lifesteal: 'defense', regen: 'defense',
+  // Economy
+  cashBonus: 'economy', waveBonus: 'economy', bossBounty: 'economy',
+  // Utility (everything else)
+};
+function rankCategory(rid) { return RANK_CATEGORY[rid] || 'utility'; }
+
+// Maps each of the 4 painted sub-tabs to which unlock families contain
+// stats relevant to that tab. The painted mockup has 4 family card slots.
+const FAMILIES_BY_CATEGORY = {
+  combat:  ['critSystems', 'multishotSystems', 'bounceSystems', 'comboSystems'],
+  defense: ['sustainSystems'],
+  economy: ['economyExpansion'],
+  utility: ['comboSystems']
+};
+
+// Subtab metadata — labels that sit under the painted icons
+const RESEARCH_SUBTABS = [
+  { id: 'combat',  label: 'Combat'  },
+  { id: 'defense', label: 'Defense' },
+  { id: 'economy', label: 'Economy' },
+  { id: 'utility', label: 'Utility' }
+];
+
+let activeResearchTab = 'combat';
+
 function renderLabsTab(c) {
-  // v0.7.15: labs replaced by ranks + unlock families.
-  // Tab shows: (1) unlock family buttons, (2) ranks grouped by family.
+  // v0.7.22: Research panel now uses a painted mockup header (4 sub-tabs +
+  // 4 family-unlock cards) with real HTML positioned into the painted slots.
+  // Rank rows flow below in normal CSS styling.
   let html = '';
 
-  // --- UNLOCKS SECTION ---
-  html += `<div class="lab-tabs"><button class="lab-tab active">Unlocks & Ranks</button></div><div class="lab-tab-body">`;
-  html += `<div style="color:var(--muted);font-size:10px;margin-bottom:8px;letter-spacing:0.5px;">PERMANENT UPGRADES · coin-bought · persist across runs</div>`;
+  // =========================================================
+  //  MOCKUP OVERLAY — title + sub-tabs + family cards
+  // =========================================================
+  html += `<div class="mockup-bg-research">`;
+  html += `  <div class="mor-title">Research</div>`;
 
-  // Starter ranks (always visible)
-  html += `<div class="lab-section-header starter">★ STARTER · ALWAYS UNLOCKED</div>`;
-  const starterIds = ['damage','fireRate','coreHealth','armor','range','cashBonus'];
-  for (const rid of starterIds) html += renderRankRow(rid);
-
-  // Unlock families — either "owned, show ranks" or "purchase button"
-  const FAMILY_ICONS = {
-    critSystems:       { icon: '✦', color: 'var(--gold)' },
-    economyExpansion:  { icon: '$', color: 'var(--gold)' },
-    sustainSystems:    { icon: '✚', color: 'var(--good)' },
-    multishotSystems:  { icon: '↟', color: 'var(--good)' },
-    bounceSystems:     { icon: '⤢', color: 'var(--purple)' },
-    comboSystems:      { icon: '⚡', color: 'var(--gold)' }
-  };
-  const orderedFamilies = Object.values(UNLOCK_FAMILIES).sort((a,b) => a.order - b.order);
-  for (const fam of orderedFamilies) {
-    if (familyIsOwned(fam.id)) {
-      html += `<div class="lab-section-header unlocked">✓ ${fam.name.toUpperCase()} · UNLOCKED</div>`;
-      for (const rid of fam.unlocks) {
-        if (RANK_DEFS[rid]) html += renderRankRow(rid);
-      }
-    } else {
-      const can = save.coins >= fam.cost;
-      const meta = FAMILY_ICONS[fam.id] || { icon: '🔒', color: 'var(--muted)' };
-      html += `
-        <div class="lab" style="border-color:${can ? 'var(--accent)' : 'var(--accent-dim)'};margin-top:8px;">
-          <div class="lab-icon-tile" style="color:${meta.color};border-color:${meta.color}">${meta.icon}</div>
-          <div class="lab-header">
-            <span class="lab-name">🔒 ${fam.name}</span>
-            <span class="lab-level">LOCKED</span>
-          </div>
-          <div class="lab-desc">Unlocks: ${fam.unlocks.map(r => RANK_DEFS[r] ? RANK_DEFS[r].name : r).join(', ')}</div>
-          <div class="lab-stat">&nbsp;</div>
-          <button class="lab-buy" data-unlock="${fam.id}" ${can ? '' : 'disabled'}>
-            Unlock · ${formatNum(fam.cost)} coins
-          </button>
-        </div>`;
-    }
+  // Sub-tabs — 4 invisible click targets over painted frames
+  html += `<div class="mor-subtabs">`;
+  for (const st of RESEARCH_SUBTABS) {
+    const isActive = st.id === activeResearchTab;
+    html += `<button class="mor-subtab ${isActive ? 'active' : ''}" data-rtab="${st.id}">
+      <span class="mor-subtab-label">${st.label}</span>
+    </button>`;
   }
   html += `</div>`;
+
+  // Family cards — up to 4 slots, keyed to active sub-tab's relevant families
+  const famIds = (FAMILIES_BY_CATEGORY[activeResearchTab] || []).slice(0, 4);
+  html += `<div class="mor-families">`;
+  for (let i = 0; i < 4; i++) {
+    const fid = famIds[i];
+    if (!fid || !UNLOCK_FAMILIES[fid]) {
+      html += `<div class="mor-fam" aria-hidden="true" disabled>
+        <div class="mor-fam-name" style="opacity:0.25">—</div>
+      </div>`;
+      continue;
+    }
+    const fam = UNLOCK_FAMILIES[fid];
+    const owned = familyIsOwned(fid);
+    const can = save.coins >= fam.cost;
+    const clsMod = owned ? 'owned' : (can ? '' : 'cant-afford');
+    const costText = owned ? '✓ UNLOCKED' : `${formatNum(fam.cost)} ⊙`;
+    html += `<button class="mor-fam ${clsMod}" data-mor-fam="${fid}" ${owned || !can ? 'disabled' : ''}>
+      <div class="mor-fam-name">${fam.name}</div>
+      <div class="mor-fam-cost">${costText}</div>
+    </button>`;
+  }
+  html += `</div>`;
+  html += `</div>`; // end mockup-bg-research
+
+  // =========================================================
+  //  RANK ROWS — flow below the mockup, filtered by active sub-tab
+  // =========================================================
+  // Collect rank ids that belong to the active category AND are unlocked
+  // (either starter, or behind a purchased family)
+  const starterIds = ['damage','fireRate','coreHealth','armor','range','cashBonus'];
+  const visibleRankIds = [];
+
+  for (const rid of starterIds) {
+    if (rankCategory(rid) === activeResearchTab) visibleRankIds.push(rid);
+  }
+  for (const fam of Object.values(UNLOCK_FAMILIES)) {
+    if (!familyIsOwned(fam.id)) continue;
+    for (const rid of fam.unlocks) {
+      if (rankCategory(rid) === activeResearchTab && RANK_DEFS[rid]) {
+        visibleRankIds.push(rid);
+      }
+    }
+  }
+
+  // Section label
+  const stMeta = RESEARCH_SUBTABS.find(s => s.id === activeResearchTab);
+  html += `<div class="mockup-rank-section">⚙ <b>${stMeta ? stMeta.label : 'Ranks'}</b> · ${visibleRankIds.length} rank${visibleRankIds.length === 1 ? '' : 's'} · coin-bought · permanent</div>`;
+
+  if (visibleRankIds.length === 0) {
+    html += `<div class="lab-section-header" style="opacity:0.55;border-style:dashed;text-align:center;padding:20px 10px;">No ranks in this category yet.<br><span style="color:var(--muted);font-weight:normal;font-size:10px;">Unlock a family above to reveal more.</span></div>`;
+  } else {
+    for (const rid of visibleRankIds) {
+      if (RANK_DEFS[rid]) html += renderRankRow(rid);
+    }
+  }
+
   c.innerHTML = html;
 
-  // Wire rank buy buttons
+  // --- Wire sub-tab switches ---
+  c.querySelectorAll('.mor-subtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tid = btn.dataset.rtab;
+      if (tid && tid !== activeResearchTab) {
+        activeResearchTab = tid;
+        renderLabsTab(c);
+      }
+    });
+  });
+
+  // --- Wire family card clicks (buy unlock family) ---
+  c.querySelectorAll('.mor-fam[data-mor-fam]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fid = btn.dataset.morFam;
+      if (purchaseUnlockFamily(fid)) {
+        renderLabsTab(c);
+        renderHud();
+      }
+    });
+  });
+
+  // --- Wire rank buy buttons ---
   c.querySelectorAll('.lab-buy[data-rank]').forEach(btn => {
     btn.addEventListener('click', () => {
       const rid = btn.dataset.rank;
@@ -878,17 +967,6 @@ function renderLabsTab(c) {
         bought++;
       }
       if (bought > 0) { renderLabsTab(c); renderHud(); }
-    });
-  });
-
-  // Wire unlock family buttons
-  c.querySelectorAll('.lab-buy[data-unlock]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const fid = btn.dataset.unlock;
-      if (purchaseUnlockFamily(fid)) {
-        renderLabsTab(c);
-        renderHud();
-      }
     });
   });
 }
@@ -1670,7 +1748,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.21 · Profile · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.22 · Mockup Overlay · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;
