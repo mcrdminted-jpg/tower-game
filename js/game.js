@@ -608,6 +608,19 @@ function endRun() {
   `;
   document.getElementById('endOverlay').classList.add('active');
   document.getElementById('endTitle').textContent = game.hp <= 0 ? 'Core Lost' : 'Run Ended';
+
+  // Show the player's name above the "Core Lost" title
+  const titleEl = document.getElementById('endTitle');
+  if (titleEl && save.username) {
+    const parent = titleEl.parentNode;
+    const stale = parent.querySelector('.end-player');
+    if (stale) stale.remove();
+    const line = document.createElement('div');
+    line.className = 'end-player';
+    line.textContent = save.username;
+    parent.insertBefore(line, titleEl);
+  }
+
   renderHud();
 }
 

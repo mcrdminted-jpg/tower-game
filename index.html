@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.20 "Nav Redesign"
+  CORE SURGE: Endless Tower Defense — v0.7.21 "Profile"
   =======================================================================
+  v0.7.21 changes:
+  - Added username / profile system. On first boot, a name like
+    "Player_4829" is auto-assigned. Change it in Settings → Profile.
+    Validation: 3-16 chars, letters / numbers / _ / - only.
+  - Username badge shows on the main menu under the tagline.
+  - End-run card displays the username above "Core Lost".
+  - Ready for tournaments: the username field in save is what will
+    be used when cloud saves + leaderboards come online.
+  - Save fields added: save.username, save.usernameLastChanged.
+    Existing saves auto-populate on next boot — no data loss.
+
   v0.7.20 changes:
   - FIXED: duplicate STORE and SETTINGS in the bottom nav. Bottom
     nav is now the 5-tab mockup layout: HOME / BATTLE / RESEARCH /
@@ -269,7 +280,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.20</title>
+<title>Core Surge — v0.7.21</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">
@@ -277,6 +288,7 @@
 <link rel="stylesheet" href="css/battle.css">
 <link rel="stylesheet" href="css/menu.css">
 <link rel="stylesheet" href="css/skins.css">
+<link rel="stylesheet" href="css/profile.css">
 </head>
 </head>
 <body>
@@ -478,5 +490,6 @@
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>
 <script src="js/skins.js"></script>
+<script src="js/profile.js"></script>
 </body>
 </html>

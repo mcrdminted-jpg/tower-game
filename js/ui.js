@@ -755,6 +755,17 @@ function renderMenu() {
   const tag = TAGLINES[save.totalRuns % TAGLINES.length];
   document.getElementById('menuTagline').textContent = tag;
 
+  // Username badge under tagline
+  const taglineEl = document.getElementById('menuTagline');
+  if (taglineEl && save.username) {
+    const existing = document.querySelector('.menu-username');
+    if (existing) existing.remove();
+    const badge = document.createElement('div');
+    badge.className = 'menu-username';
+    badge.textContent = save.username;
+    taglineEl.parentNode.insertBefore(badge, taglineEl.nextSibling);
+  }
+
   // v0.7.17: drive the home battlefield preview from the equipped skin
   const previewCore = save.equippedCoreSkin || 'sentinel';
   const previewBg = save.equippedBgSkin || 'cyber_grid';
@@ -1515,6 +1526,69 @@ function renderSkinsTab(c) {
 
 function renderSettingsTab(c) {
   c.innerHTML = '';
+
+  // --- Profile (username) ---
+  const profileWrap = document.createElement('div');
+  profileWrap.className = 'profile-section';
+  profileWrap.innerHTML = `
+    <div class="profile-section-title">Profile</div>
+    <div class="profile-row">
+      <input class="profile-input"
+             id="usernameInput"
+             type="text"
+             maxlength="16"
+             autocomplete="off"
+             autocapitalize="off"
+             autocorrect="off"
+             spellcheck="false"
+             value="${(save.username || '').replace(/"/g, '&quot;')}">
+      <button class="profile-save-btn" id="usernameSaveBtn" disabled>Save</button>
+    </div>
+    <div class="profile-hint" id="usernameHint">3–16 chars · letters, numbers, _ or -</div>
+    <div class="profile-meta">
+      <span class="profile-meta-label">Last changed</span>
+      <span class="profile-meta-value" id="usernameLastChanged">${formatRelativeTime(save.usernameLastChanged)}</span>
+    </div>
+  `;
+  c.appendChild(profileWrap);
+  const pInput = profileWrap.querySelector('#usernameInput');
+  const pBtn = profileWrap.querySelector('#usernameSaveBtn');
+  const pHint = profileWrap.querySelector('#usernameHint');
+  const pLast = profileWrap.querySelector('#usernameLastChanged');
+  const pOriginal = save.username || '';
+  function profileValidate() {
+    const v = validateUsername(pInput.value);
+    const changed = pInput.value.trim() !== pOriginal;
+    if (!v.ok) {
+      pInput.classList.add('invalid');
+      pHint.classList.add('error');
+      pHint.textContent = v.reason;
+      pBtn.disabled = true;
+    } else {
+      pInput.classList.remove('invalid');
+      pHint.classList.remove('error');
+      pHint.textContent = '3–16 chars · letters, numbers, _ or -';
+      pBtn.disabled = !changed;
+    }
+  }
+  pInput.addEventListener('input', profileValidate);
+  pBtn.addEventListener('click', () => {
+    const result = setUsername(pInput.value);
+    if (!result.ok) {
+      pHint.classList.add('error');
+      pHint.textContent = result.reason;
+      pInput.classList.add('invalid');
+      return;
+    }
+    pBtn.textContent = 'Saved';
+    pBtn.classList.add('saved');
+    pBtn.disabled = true;
+    pLast.textContent = formatRelativeTime(save.usernameLastChanged);
+    setTimeout(() => { pBtn.textContent = 'Save'; pBtn.classList.remove('saved'); }, 1400);
+    if (typeof renderMenu === 'function') renderMenu();
+  });
+  profileValidate();
+
   // Theme picker
   const themes = [
     { key: 'neon',   name: 'Neon',   swatch: ['#00f0ff','#ff3366','#ffcc00'] },
@@ -1596,7 +1670,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.20 · Nav Redesign · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.21 · Profile · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;

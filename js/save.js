@@ -18,6 +18,9 @@ const defaultSave = {
   totalCashEarned: 0,
   totalEnemiesKilled: 0,
   totalPlaytimeMs: 0,
+  // v0.7.21: player profile (local-only, backend-ready)
+  username: null,
+  usernameLastChanged: null,
   settings: {
     showFloatingDamage: true,
     showFloatingCash: true,

@@ -1,0 +1,122 @@
+/* ============================================================
+   profile.css — username UI
+   ------------------------------------------------------------
+   Additive. Uses existing theme vars (--accent, --good, --danger)
+   so it inherits whichever theme is active.
+   ============================================================ */
+
+/* --- Settings tab: Profile section --- */
+.profile-section {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.profile-section-title {
+  color: var(--accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.profile-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.profile-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.profile-input:focus {
+  border-color: var(--accent);
+}
+.profile-input.invalid {
+  border-color: var(--danger);
+}
+
+.profile-save-btn {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+.profile-save-btn:hover { filter: brightness(1.1); }
+.profile-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.profile-save-btn.saved {
+  background: var(--good);
+}
+
+.profile-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.3px;
+}
+.profile-hint.error {
+  color: var(--danger);
+}
+
+.profile-meta {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+.profile-meta-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.profile-meta-value {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- Main menu: username badge under tagline --- */
+.menu-username {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.menu-username::before {
+  content: "◆ ";
+  opacity: 0.6;
+}
+
+/* --- End-run card: player line above the title --- */
+.end-player {
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
