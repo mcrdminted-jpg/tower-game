@@ -71,9 +71,17 @@
   z-index: 0;
   pointer-events: none;
 }
-/* Make sure live gameplay elements stay above the bg layer */
-#battlefield[data-bg-skin] > * {
-  position: relative;
+/* Lift gameplay elements above the ::before backdrop. Only bump z-index —
+   DO NOT change their position property (tower/range ring/enemies rely on
+   position:absolute for placement). Pseudo-elements get z-index 0, real
+   children get z-index: auto which stacks above pseudo-elements naturally,
+   but we set it explicitly to be safe. */
+#battlefield[data-bg-skin] > .tower,
+#battlefield[data-bg-skin] > .range-ring,
+#battlefield[data-bg-skin] > .enemy,
+#battlefield[data-bg-skin] > .projectile,
+#battlefield[data-bg-skin] > .floater,
+#battlefield[data-bg-skin] > .gem-orb {
   z-index: 1;
 }
 
