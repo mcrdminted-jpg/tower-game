@@ -13,6 +13,46 @@ const UPGRADE_TABS = {
   economy: { title: 'Economy', icon: '💰', color: 'var(--gold)', keys: ['cashBonus','waveBonus','combo','bossBounty','coinBonus'] }
 };
 
+// v0.7.15: each in-run upgrade maps to an unlock family. If the family isn't
+// owned, the upgrade is hidden from the battle panel.
+// null = always visible (starter set).
+const UPGRADE_UNLOCK_FAMILY = {
+  // Starter — always visible
+  damage:           null,
+  attackSpeed:      null,
+  health:           null,
+  defense:          null,
+  range:            null,
+  cashBonus:        null,
+  heal:             null,
+  coinBonus:        null,
+  // Gated by critSystems
+  critChance:       'critSystems',
+  critPower:        'critSystems',
+  // Gated by economyExpansion
+  waveBonus:        'economyExpansion',
+  bossBounty:       'economyExpansion',
+  // Gated by sustainSystems
+  lifesteal:        'sustainSystems',
+  regen:            'sustainSystems',
+  // Gated by multishotSystems
+  multishotChance:  'multishotSystems',
+  multishotPower:   'multishotSystems',
+  multishotTargets: 'multishotSystems',
+  // Gated by bounceSystems
+  bounceChance:     'bounceSystems',
+  bouncePower:      'bounceSystems',
+  bounceTargets:    'bounceSystems',
+  // Gated by comboSystems
+  combo:            'comboSystems'
+};
+
+function upgradeIsVisible(key) {
+  const fam = UPGRADE_UNLOCK_FAMILY[key];
+  if (!fam) return true;  // always visible
+  return familyIsOwned(fam);
+}
+
 // Icon metadata per upgrade — rendered as colored tiles on the left of each upgrade button
 const UPGRADE_ICONS = {
   damage:           { icon: '🚀', color: 'var(--danger)' },
@@ -78,11 +118,19 @@ function renderUpgrades() {
   }
   wrap.appendChild(tabs);
 
-  // Grid
+  // Grid — filtered by unlock family (hide locked upgrades entirely)
   const grid = document.createElement('div');
   grid.className = 'upgrade-grid';
-  for (const key of UPGRADE_TABS[activeUpgradeTab].keys) {
-    grid.appendChild(buildUpgradeBtn(key));
+  const visibleKeys = UPGRADE_TABS[activeUpgradeTab].keys.filter(upgradeIsVisible);
+  if (visibleKeys.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 20px 12px; color: var(--muted); font-size: 10px;';
+    empty.innerHTML = `Nothing unlocked in this tab yet.<br><span style="color:var(--accent)">Buy system unlocks in the <b>Ranks</b> tab.</span>`;
+    grid.appendChild(empty);
+  } else {
+    for (const key of visibleKeys) {
+      grid.appendChild(buildUpgradeBtn(key));
+    }
   }
   wrap.appendChild(grid);
 }
@@ -599,98 +647,98 @@ function renderSubmenu() {
 let activeLabTab = 'combat';
 
 function renderLabsTab(c) {
-  const groups = {
-    combat:  { title: 'Offense',  keys: [] },
-    defense: { title: 'Defense',  keys: [] },
-    economy: { title: 'Economy',  keys: [] },
-    utility: { title: 'Utility',  keys: [] }
-  };
-  for (const key of Object.keys(save.labs)) {
-    const g = save.labs[key].group;
-    if (groups[g]) groups[g].keys.push(key);
-  }
+  // v0.7.15: labs replaced by ranks + unlock families.
+  // Tab shows: (1) unlock family buttons, (2) ranks grouped by family.
+  let html = '';
 
-  // Build tab bar + content for active tab only
-  let html = `<div class="lab-tabs">`;
-  for (const gKey of Object.keys(groups)) {
-    const grp = groups[gKey];
-    html += `<button class="lab-tab ${activeLabTab === gKey ? 'active' : ''}" data-labtab="${gKey}">${grp.title} (${grp.keys.length})</button>`;
-  }
-  html += `</div><div class="lab-tab-body">`;
+  // --- UNLOCKS SECTION ---
+  html += `<div class="lab-tabs"><button class="lab-tab active">Unlocks & Ranks</button></div><div class="lab-tab-body">`;
+  html += `<div style="color:var(--muted);font-size:10px;margin-bottom:8px;letter-spacing:0.5px;">PERMANENT UPGRADES · coin-bought · persist across runs</div>`;
 
-  const activeKeys = groups[activeLabTab].keys;
-  for (const labKey of activeKeys) {
-    const lab = save.labs[labKey];
-    const cost = labCost(lab);
-    const cur = labValue(lab);
-    const next = labNextValue(lab);
-    const maxed = lab.level >= lab.max;
-    const can = save.coins >= cost && !maxed;
-    let desc;
-    if (labKey === 'offlineCap') desc = `${(10 + cur).toFixed(0)} min → ${(10 + next).toFixed(0)} min`;
-    else if (labKey === 'offlineRate') desc = `${((0.05 + cur) * 100).toFixed(0)}% → ${((0.05 + next) * 100).toFixed(0)}%`;
-    else if (labKey === 'defense') desc = `${(cur * 100).toFixed(1)}% → ${(next * 100).toFixed(1)}%`;
-    else if (labKey === 'gameSpeed') {
-      const curSpeed = lab.level >= 50 ? '3×' : lab.level >= 20 ? '2×' : '1×';
-      const nextSpeed = (lab.level + 1) >= 50 ? '3×' : (lab.level + 1) >= 20 ? '2×' : '1×';
-      const nextUnlock = lab.level < 20 ? ` · 2× at L20 (${20 - lab.level} left)` : lab.level < 50 ? ` · 3× at L50 (${50 - lab.level} left)` : ' · max speed';
-      desc = `${curSpeed} → ${nextSpeed}${nextUnlock}`;
+  // Starter ranks (always visible)
+  html += `<div style="color:var(--accent);font-size:10px;letter-spacing:1px;margin-top:6px;font-weight:bold;">★ STARTER</div>`;
+  const starterIds = ['damage','fireRate','coreHealth','armor','range','cashBonus'];
+  for (const rid of starterIds) html += renderRankRow(rid);
+
+  // Unlock families — either "owned, show ranks" or "purchase button"
+  const orderedFamilies = Object.values(UNLOCK_FAMILIES).sort((a,b) => a.order - b.order);
+  for (const fam of orderedFamilies) {
+    if (familyIsOwned(fam.id)) {
+      html += `<div style="color:var(--good);font-size:10px;letter-spacing:1px;margin-top:12px;font-weight:bold;">✓ ${fam.name.toUpperCase()} · UNLOCKED</div>`;
+      for (const rid of fam.unlocks) {
+        if (RANK_DEFS[rid]) html += renderRankRow(rid);
+      }
+    } else {
+      const can = save.coins >= fam.cost;
+      html += `
+        <div class="lab" style="border-color:${can ? 'var(--accent)' : 'var(--accent-dim)'};margin-top:12px;">
+          <div class="lab-header">
+            <span class="lab-name">🔒 ${fam.name}</span>
+            <span class="lab-level">LOCKED</span>
+          </div>
+          <div class="lab-desc">Unlocks: ${fam.unlocks.map(r => RANK_DEFS[r] ? RANK_DEFS[r].name : r).join(', ')}</div>
+          <button class="lab-buy" data-unlock="${fam.id}" ${can ? '' : 'disabled'}>
+            Unlock · ${formatNum(fam.cost)} coins
+          </button>
+        </div>`;
     }
-    else if (lab.type === 'mul') desc = `×${cur.toFixed(2)} → ×${next.toFixed(2)}`;
-    else desc = `+${cur} → +${next}`;
-    html += `
-      <div class="lab">
-        <div class="lab-header">
-          <span class="lab-name">${lab.name}</span>
-          <span class="lab-level">Lv ${lab.level}${lab.max < 999 ? ' / ' + lab.max : ''}</span>
-        </div>
-        <div class="lab-desc">${lab.desc}</div>
-        <div class="lab-stat">${desc}</div>
-        <button class="lab-buy ${maxed ? 'maxed' : ''}" data-lab="${labKey}" ${maxed || !can ? 'disabled' : ''}>
-          ${maxed ? 'MAXED' : `Upgrade · ${formatNum(cost)} coins`}
-        </button>
-      </div>
-    `;
   }
   html += `</div>`;
   c.innerHTML = html;
 
-  // Wire tab switching
-  c.querySelectorAll('.lab-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      activeLabTab = t.dataset.labtab;
-      renderLabsTab(c);
+  // Wire rank buy buttons
+  c.querySelectorAll('.lab-buy[data-rank]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rid = btn.dataset.rank;
+      const mul = save.settings.buyMultiplier || 1;
+      const maxToBuy = mul === 'max' ? 10000 : mul;
+      let bought = 0;
+      while (bought < maxToBuy) {
+        if (!purchaseRank(rid)) break;
+        bought++;
+      }
+      if (bought > 0) { renderLabsTab(c); renderHud(); }
     });
   });
 
-  c.querySelectorAll('.lab-buy').forEach(btn => {
-    const key = btn.dataset.lab;
-    const buyLab = () => {
-      const lab = save.labs[key];
-      if (!lab) return false;
-      const mulSetting = save.settings.buyMultiplier || 1;
-      let maxToBuy = mulSetting === 'max' ? 10000 : mulSetting;
-      let bought = 0;
-      while (bought < maxToBuy) {
-        if (lab.level >= lab.max) break;
-        const cost = labCost(lab);
-        if (save.coins < cost) break;
-        save.coins -= cost;
-        lab.level++;
-        bought++;
+  // Wire unlock family buttons
+  c.querySelectorAll('.lab-buy[data-unlock]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fid = btn.dataset.unlock;
+      if (purchaseUnlockFamily(fid)) {
+        renderLabsTab(c);
+        renderHud();
       }
-      if (bought === 0) return false;
-      if (key === 'gameSpeed' && save.settings.gameSpeed > maxUnlockedSpeed()) {
-        save.settings.gameSpeed = maxUnlockedSpeed();
-      }
-      persistSave();
-      renderLabsTab(c);
-      renderHud();
-      return true;
-    };
-    attachHoldToBuy(btn, buyLab);
-    btn.addEventListener('click', (e) => e.stopPropagation());
+    });
   });
+}
+
+function renderRankRow(rid) {
+  const def = RANK_DEFS[rid];
+  const entry = save.ranks[rid] || { level: 0 };
+  const maxed = entry.level >= def.maxRank;
+  const cost = maxed ? Infinity : rankCost(rid, entry.level);
+  const can = save.coins >= cost && !maxed;
+  const curBonus = rankFlatBonus(rid);
+  const nextBonus = (entry.level + 1) * def.flatPerRank;
+  // Format the "+bonus" string based on magnitude
+  const fmt = (v) => {
+    if (Math.abs(v) < 0.01) return v.toFixed(4);
+    if (Math.abs(v) < 1) return v.toFixed(3);
+    return v.toFixed(1);
+  };
+  return `
+    <div class="lab">
+      <div class="lab-header">
+        <span class="lab-name">${def.name}</span>
+        <span class="lab-level">Rank ${entry.level} / ${def.maxRank}</span>
+      </div>
+      <div class="lab-desc">${def.desc}</div>
+      <div class="lab-stat">+${fmt(curBonus)} → +${fmt(nextBonus)}</div>
+      <button class="lab-buy ${maxed ? 'maxed' : ''}" data-rank="${rid}" ${maxed || !can ? 'disabled' : ''}>
+        ${maxed ? 'MAXED' : `Rank Up · ${formatNum(cost)} coins`}
+      </button>
+    </div>`;
 }
 
 let activeGoalTier = 1;
@@ -1335,7 +1383,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.14 · Real Skins · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.15 · Ranks Foundation · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;
@@ -1457,13 +1505,18 @@ function devAct(act) {
     case 'gems100':   save.gems += 100; break;
     case 'gems10k':   save.gems += 10000; break;
     case 'maxLabs':
-      for (const k of Object.keys(save.labs)) save.labs[k].level = save.labs[k].max;
+      // v0.7.15: max all ranks + unlock all families
+      for (const fid of Object.keys(UNLOCK_FAMILIES)) save.unlocks[fid] = true;
+      for (const rid of Object.keys(RANK_DEFS)) {
+        if (!save.ranks[rid]) save.ranks[rid] = { level: 0 };
+        save.ranks[rid].level = RANK_DEFS[rid].maxRank;
+      }
       break;
     case 'unlockTiers':
       for (let t = 1; t < MAX_TIER; t++) save.bestWavePerTier[t] = Math.max(save.bestWavePerTier[t] || 0, 100);
       break;
     case 'maxSpeed':
-      save.labs.gameSpeed.level = 50;
+      // Game speed is a hard-coded baseline now (3x always available)
       save.settings.gameSpeed = 3;
       break;
     case 'setBestWave':

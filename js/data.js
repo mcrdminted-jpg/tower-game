@@ -8,9 +8,11 @@
 // ============================================================
 // CONSTANTS
 // ============================================================
-const SAVE_KEY = 'tower_save_v7';
-// Old save keys listed so we can DELETE them on load (not migrate)
-const DEAD_SAVE_KEYS = ['tower_save_v6', 'tower_save_v5', 'tower_save_v4', 'tower_save_v3', 'tower_save_v2'];
+const SAVE_KEY = 'tower_save_v8';
+// Old save keys listed so we can DELETE them on load (not migrate).
+// v7 added to the graveyard on v0.7.15 — labs replaced by ranks system,
+// fresh start is intentional.
+const DEAD_SAVE_KEYS = ['tower_save_v7', 'tower_save_v6', 'tower_save_v5', 'tower_save_v4', 'tower_save_v3', 'tower_save_v2'];
 const MAX_TIER = 18;
 const MILESTONE_WAVES = [25, 50, 100, 200, 500, 1000, 2500, 5000, 10000];
 
@@ -516,4 +518,256 @@ function tourneyExpectedWaveRange(bandId, league) {
   const mul = leagueMul[league] || 1;
   const center = base * mul;
   return [Math.floor(center * 0.65), Math.floor(center * 1.35)];
+}
+
+// ============================================================
+// UNLOCK FAMILIES + PERMANENT RANKS (v0.7.15)
+// ============================================================
+// New permanent progression model:
+//   - Unlock families reveal groups of stats (one-time coin purchase)
+//   - Ranks are permanent coin-bought levels per stat (flat per-rank bonus)
+//   - In-run upgrades are separate and reset each run
+//
+// Starter set (always unlocked, always visible):
+//   damage, fireRate, coreHealth, armor, range, cashBonus
+//
+// Everything else requires buying the parent unlock family first.
+
+const UNLOCK_FAMILIES = {
+  critSystems: {
+    id: 'critSystems', name: 'Crit Systems',
+    cost: 2500,
+    unlocks: ['critChance', 'critPower'],
+    order: 1
+  },
+  economyExpansion: {
+    id: 'economyExpansion', name: 'Economy Expansion',
+    cost: 5000,
+    unlocks: ['waveBonus', 'bossBounty'],
+    order: 2
+  },
+  sustainSystems: {
+    id: 'sustainSystems', name: 'Sustain Systems',
+    cost: 10000,
+    unlocks: ['regen', 'lifesteal'],
+    order: 3
+  },
+  multishotSystems: {
+    id: 'multishotSystems', name: 'Multishot Systems',
+    cost: 25000,
+    unlocks: ['multiChance', 'multiPower', 'multiTargets'],
+    order: 4
+  },
+  bounceSystems: {
+    id: 'bounceSystems', name: 'Bounce Systems',
+    cost: 50000,
+    unlocks: ['bounceChance', 'bouncePower', 'bounceTargets'],
+    order: 5
+  },
+  comboSystems: {
+    id: 'comboSystems', name: 'Combo Systems',
+    cost: 100000,
+    unlocks: ['comboBonus'],
+    order: 6
+  }
+};
+
+// Rank definitions. Each rank gives +flatPerRank to base value (additive).
+// Stats with `startsUnlocked: true` are always purchasable from game start.
+// Others require buying their parent unlock family first.
+// maxRank caps total from the spec (sum = 2000).
+// cost0 = first rank cost, costMul = geometric cost growth per rank.
+// Cost curves tuned so early ranks are cheap, late ranks brutal.
+const RANK_DEFS = {
+  // === STARTER (always unlocked) ===
+  damage: {
+    id: 'damage', name: 'Damage', family: null, startsUnlocked: true,
+    base: 5, flatPerRank: 1, maxRank: 400,
+    cost0: 10, costMul: 1.12,
+    desc: '+1 damage per rank'
+  },
+  fireRate: {
+    id: 'fireRate', name: 'Fire Rate', family: null, startsUnlocked: true,
+    base: 1.0, flatPerRank: 0.02, maxRank: 250,
+    cost0: 20, costMul: 1.13,
+    desc: '+0.02 shots/sec per rank'
+  },
+  coreHealth: {
+    id: 'coreHealth', name: 'Core Integrity', family: null, startsUnlocked: true,
+    base: 100, flatPerRank: 10, maxRank: 400,
+    cost0: 12, costMul: 1.11,
+    desc: '+10 max HP per rank'
+  },
+  armor: {
+    id: 'armor', name: 'Armor', family: null, startsUnlocked: true,
+    base: 0, flatPerRank: 0.005, maxRank: 150,
+    cost0: 40, costMul: 1.14,
+    desc: '+0.5% damage reduction per rank (cap 75%)'
+  },
+  range: {
+    id: 'range', name: 'Range', family: null, startsUnlocked: true,
+    base: 0, flatPerRank: 1, maxRank: 100,
+    cost0: 25, costMul: 1.14,
+    desc: '+1 range level per rank'
+  },
+  cashBonus: {
+    id: 'cashBonus', name: 'Cash Bonus', family: null, startsUnlocked: true,
+    base: 0, flatPerRank: 0.02, maxRank: 150,
+    cost0: 18, costMul: 1.12,
+    desc: '+2% cash per kill per rank'
+  },
+
+  // === CRIT SYSTEMS ===
+  critChance: {
+    id: 'critChance', name: 'Crit Chance', family: 'critSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.005, maxRank: 100,
+    cost0: 150, costMul: 1.14,
+    desc: '+0.5% crit chance per rank'
+  },
+  critPower: {
+    id: 'critPower', name: 'Crit Power', family: 'critSystems', startsUnlocked: false,
+    base: 2.0, flatPerRank: 0.02, maxRank: 100,
+    cost0: 180, costMul: 1.14,
+    desc: '+0.02× crit multiplier per rank'
+  },
+
+  // === ECONOMY EXPANSION ===
+  waveBonus: {
+    id: 'waveBonus', name: 'Wave Bonus', family: 'economyExpansion', startsUnlocked: false,
+    base: 0, flatPerRank: 0.05, maxRank: 50,
+    cost0: 300, costMul: 1.16,
+    desc: '+5% end-of-wave cash per rank'
+  },
+  bossBounty: {
+    id: 'bossBounty', name: 'Boss Bounty', family: 'economyExpansion', startsUnlocked: false,
+    base: 0, flatPerRank: 0.05, maxRank: 50,
+    cost0: 350, costMul: 1.17,
+    desc: '+5% boss kill reward per rank'
+  },
+
+  // === SUSTAIN SYSTEMS ===
+  regen: {
+    id: 'regen', name: 'Regen', family: 'sustainSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.0005, maxRank: 75,
+    cost0: 400, costMul: 1.16,
+    desc: '+0.05% max HP/sec regen per rank'
+  },
+  lifesteal: {
+    id: 'lifesteal', name: 'Lifesteal', family: 'sustainSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.003, maxRank: 75,
+    cost0: 500, costMul: 1.16,
+    desc: '+0.3% lifesteal per rank'
+  },
+
+  // === MULTISHOT SYSTEMS ===
+  multiChance: {
+    id: 'multiChance', name: 'Multishot Chance', family: 'multishotSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.01, maxRank: 25,
+    cost0: 1200, costMul: 1.22,
+    desc: '+1% multishot chance per rank'
+  },
+  multiPower: {
+    id: 'multiPower', name: 'Multishot Power', family: 'multishotSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.02, maxRank: 25,
+    cost0: 1400, costMul: 1.22,
+    desc: '+2% multishot power per rank'
+  },
+  multiTargets: {
+    id: 'multiTargets', name: 'Multishot Targets', family: 'multishotSystems', startsUnlocked: false,
+    base: 1, flatPerRank: 1, maxRank: 5,
+    cost0: 25000, costMul: 3.5,
+    desc: '+1 target per rank (max 6 total)'
+  },
+
+  // === BOUNCE SYSTEMS ===
+  bounceChance: {
+    id: 'bounceChance', name: 'Bounce Chance', family: 'bounceSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.01, maxRank: 20,
+    cost0: 2500, costMul: 1.24,
+    desc: '+1% bounce chance per rank'
+  },
+  bouncePower: {
+    id: 'bouncePower', name: 'Bounce Power', family: 'bounceSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 0.025, maxRank: 20,
+    cost0: 2800, costMul: 1.24,
+    desc: '+2.5% bounce damage per rank'
+  },
+  bounceTargets: {
+    id: 'bounceTargets', name: 'Bounce Targets', family: 'bounceSystems', startsUnlocked: false,
+    base: 0, flatPerRank: 1, maxRank: 5,
+    cost0: 50000, costMul: 3.5,
+    desc: '+1 bounce per rank'
+  }
+};
+
+// Verify total ranks = 2000 (spec target)
+// damage 400 + fireRate 250 + coreHealth 400 + armor 150 + range 100 + cashBonus 150
+// + crit 100 + critPower 100 + waveBonus 50 + bossBounty 50
+// + regen 75 + lifesteal 75
+// + multiChance 25 + multiPower 25 + multiTargets 5
+// + bounceChance 20 + bouncePower 20 + bounceTargets 5
+// = 2000 ✓
+
+// Rank cost helper: cost to buy the NEXT rank (current level -> level+1)
+function rankCost(rankId, currentLevel) {
+  const def = RANK_DEFS[rankId];
+  if (!def) return Infinity;
+  if (currentLevel >= def.maxRank) return Infinity;
+  return Math.floor(def.cost0 * Math.pow(def.costMul, currentLevel));
+}
+
+// Current flat bonus from a rank (rank.level * flatPerRank)
+function rankFlatBonus(rankId) {
+  const def = RANK_DEFS[rankId];
+  const entry = save.ranks[rankId];
+  if (!def || !entry) return 0;
+  return entry.level * def.flatPerRank;
+}
+
+// Permanent base value for a stat (base + rank bonus, before in-run upgrades)
+function rankPermanentValue(rankId) {
+  const def = RANK_DEFS[rankId];
+  if (!def) return 0;
+  return def.base + rankFlatBonus(rankId);
+}
+
+// Is a stat currently available to rank (either startsUnlocked or family bought)
+function rankIsAvailable(rankId) {
+  const def = RANK_DEFS[rankId];
+  if (!def) return false;
+  if (def.startsUnlocked) return true;
+  if (!def.family) return true;
+  return !!(save.unlocks && save.unlocks[def.family]);
+}
+
+// Is an unlock family currently owned
+function familyIsOwned(familyId) {
+  return !!(save.unlocks && save.unlocks[familyId]);
+}
+
+// Buy an unlock family (returns true on success)
+function purchaseUnlockFamily(familyId) {
+  const fam = UNLOCK_FAMILIES[familyId];
+  if (!fam) return false;
+  if (familyIsOwned(familyId)) return false;
+  if (save.coins < fam.cost) return false;
+  save.coins -= fam.cost;
+  save.unlocks[familyId] = true;
+  persistSave();
+  return true;
+}
+
+// Buy one rank (returns true on success)
+function purchaseRank(rankId) {
+  const def = RANK_DEFS[rankId];
+  if (!def) return false;
+  if (!rankIsAvailable(rankId)) return false;
+  const entry = save.ranks[rankId] || (save.ranks[rankId] = { level: 0 });
+  if (entry.level >= def.maxRank) return false;
+  const cost = rankCost(rankId, entry.level);
+  if (save.coins < cost) return false;
+  save.coins -= cost;
+  entry.level += 1;
+  persistSave();
+  return true;
 }

@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.14 "Real Skins"
+  CORE SURGE: Endless Tower Defense — v0.7.15 "Ranks Foundation"
   =======================================================================
+  v0.7.15 changes:
+  - MAJOR: Permanent progression redesigned. Labs removed, replaced by
+    Unlock Families + Ranks. Each stat has a max-rank cap (spec: 2000
+    total ranks across the tree). Ranks give FLAT permanent bonuses.
+  - Unlock Families: Crit (2,500), Economy (5,000), Sustain (10,000),
+    Multishot (25,000), Bounce (50,000), Combo (100,000).
+  - Starter set (always unlocked): Damage, Fire Rate, Core Integrity,
+    Armor, Range, Cash Bonus. Everything else hidden until the family
+    is bought.
+  - Tier 1 onboarding: Waves 1-10 enemy HP = wave number (1,2,3...10).
+    Normal scaling resumes at Wave 11.
+  - Research tab renamed to Ranks (both in submenu and bottom nav).
+  - Save key bumped to tower_save_v8. Old saves wiped automatically
+    — this is a fresh foundation.
+  - Dev panel "Max labs" now maxes all ranks + unlocks all families.
+  - Cost curves are first-draft; will be tuned in a later pass toward
+    the 1-year F2P target (T18 fully unlocked at 2hr/day).
+
   v0.7.14 changes:
   - Real Core skin art wired in (6 skins: Sentinel, Industrial, Verdant,
     Aegis, Frost, Royal). Tap in Skins tab → equips on battlefield.
@@ -182,7 +200,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.14</title>
+<title>Core Surge — v0.7.15</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">
@@ -226,7 +244,7 @@
     <button class="start-btn" id="startBtn">Begin Defense</button>
   </div>
   <div class="submenu" id="submenu">
-    <button class="submenu-btn active" data-tab="labs">Research</button>
+    <button class="submenu-btn active" data-tab="labs">Ranks</button>
     <button class="submenu-btn" data-tab="milestones">Goals</button>
     <button class="submenu-btn" data-tab="cards">Loadout</button>
     <button class="submenu-btn" data-tab="tournament">Tourney</button>
@@ -313,7 +331,7 @@
 <div class="global-nav" id="globalNav">
   <button class="global-nav-btn" data-nav="labs">
     <span class="global-nav-icon">🧪</span>
-    <span class="global-nav-label">RESEARCH</span>
+    <span class="global-nav-label">RANKS</span>
   </button>
   <button class="global-nav-btn" data-nav="milestones">
     <span class="global-nav-icon">🎯</span>

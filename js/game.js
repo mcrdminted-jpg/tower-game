@@ -4,23 +4,20 @@
 // ============================================================
 
 // ============================================================
-// LAB MATH
+// LAB MATH (v0.7.15: labs deprecated, replaced by ranks)
 // ============================================================
+// labCost retained for any legacy callers.
 function labCost(lab) { return Math.floor(lab.cost0 * Math.pow(lab.costMul, lab.level)); }
-function labValue(lab) {
-  if (lab.type === 'mul') return 1 + lab.level * lab.valuePerLevel;
-  return lab.level * lab.valuePerLevel;
-}
-function labNextValue(lab) { return labValue({ ...lab, level: lab.level + 1 }); }
-function offlineCapMinutes() { return 10 + labValue(save.labs.offlineCap); }
-function offlineRateFraction() { return 0.05 + labValue(save.labs.offlineRate); }
-function defenseFraction() { return Math.min(0.50, labValue(save.labs.defense)); }
-function maxUnlockedSpeed() {
-  const lvl = save.labs.gameSpeed.level;
-  if (lvl >= 50) return 3;
-  if (lvl >= 20) return 2;
-  return 1;
-}
+// labValue/labNextValue are now no-ops. Any straggler `labValue(save.labs.X)`
+// calls will return 0, which is the identity for additive bonuses.
+function labValue(lab) { return 0; }
+function labNextValue(lab) { return 0; }
+
+// Offline/utility values — hard-coded baselines until a utility ranks pass.
+function offlineCapMinutes() { return 10; }     // 10 min offline cap
+function offlineRateFraction() { return 0.05; } // 5% of active rate offline
+function defenseFraction() { return 0; }        // armor now comes from ranks
+function maxUnlockedSpeed() { return 3; }       // all 3 speeds unlocked at launch
 
 // ============================================================
 // TIER + MILESTONE
@@ -148,85 +145,83 @@ function longStatBonusNext(level) { return longStatBonus(level + 1); }
 // === Damage ===
 function getDamage() {
   const u = game.upgrades.damage;
-  const base = 5;
+  const permBase = rankPermanentValue('damage'); // 5 + rank * 1
   const run = 1 + longStatBonus(u.level);
-  const lab = labValue(save.labs.damage); // multiplier from lab
   const cardBucket = getCardBucket('damage');
   const predator = getPredatorLoopPerBoss();
   const predBonus = predator ? predator.dmg * (game.bossesDefeated || 0) : 0;
-  return base * run * lab * (1 + cardBucket) * (1 + predBonus);
+  return permBase * run * (1 + cardBucket) * (1 + predBonus);
 }
 function getDamageNext() {
   const u = game.upgrades.damage;
-  const base = 5;
+  const permBase = rankPermanentValue('damage');
   const run = 1 + longStatBonus(u.level + 1);
-  const lab = labValue(save.labs.damage);
   const cardBucket = getCardBucket('damage');
   const predator = getPredatorLoopPerBoss();
   const predBonus = predator ? predator.dmg * (game.bossesDefeated || 0) : 0;
-  return base * run * lab * (1 + cardBucket) * (1 + predBonus);
+  return permBase * run * (1 + cardBucket) * (1 + predBonus);
 }
 
 // === Fire Rate === (65% of curve per audit — multiplies DPS)
 function getAttackSpeed() {
   const u = game.upgrades.attackSpeed;
-  const baseAps = 1.0;
-  const lab = labValue(save.labs.fireRate);
+  const permBase = rankPermanentValue('fireRate'); // 1.0 + rank * 0.02
   const cardBucket = getCardBucket('attackSpeed');
   const predator = getPredatorLoopPerBoss();
   const predBonus = predator ? predator.aps * (game.bossesDefeated || 0) : 0;
-  return baseAps * (1 + longStatBonus(u.level) * 0.65) * lab * (1 + cardBucket) * (1 + predBonus);
+  return permBase * (1 + longStatBonus(u.level) * 0.65) * (1 + cardBucket) * (1 + predBonus);
 }
 function getAttackSpeedNext() {
   const u = game.upgrades.attackSpeed;
-  const lab = labValue(save.labs.fireRate);
+  const permBase = rankPermanentValue('fireRate');
   const cardBucket = getCardBucket('attackSpeed');
   const predator = getPredatorLoopPerBoss();
   const predBonus = predator ? predator.aps * (game.bossesDefeated || 0) : 0;
-  return 1.0 * (1 + longStatBonus(u.level + 1) * 0.65) * lab * (1 + cardBucket) * (1 + predBonus);
+  return permBase * (1 + longStatBonus(u.level + 1) * 0.65) * (1 + cardBucket) * (1 + predBonus);
 }
 function getAttackInterval() { return 1000 / getAttackSpeed(); }
 
-// === Tower HP ===
+// === Core Integrity (max HP) ===
 function getMaxHp() {
   const u = game.upgrades.health;
-  const base = 100;
+  const permBase = rankPermanentValue('coreHealth'); // 100 + rank * 10
   const run = 1 + longStatBonus(u.level);
-  const lab = labValue(save.labs.health);
   const cardBucket = getCardBucket('health');
-  return Math.floor(base * run * lab * (1 + cardBucket));
+  return Math.floor(permBase * run * (1 + cardBucket));
 }
 function getMaxHpNext() {
   const u = game.upgrades.health;
-  const base = 100;
+  const permBase = rankPermanentValue('coreHealth');
   const run = 1 + longStatBonus(u.level + 1);
-  const lab = labValue(save.labs.health);
   const cardBucket = getCardBucket('health');
-  return Math.floor(base * run * lab * (1 + cardBucket));
+  return Math.floor(permBase * run * (1 + cardBucket));
 }
 
-// === Defense === (0.5% per level, max 90%, matched by max level 180)
-// Cards add percentage points (Hard Shell card) up to cap.
+// === Armor === (0.5% per in-run level + flat from ranks, cap 75%)
 function getDefenseFraction() {
   const u = game.upgrades.defense;
-  return Math.min(0.90, u.level * 0.005 + defenseFraction() + getCardBucket('defense'));
+  const rankFlat = rankFlatBonus('armor'); // rank * 0.005
+  return Math.min(0.75, u.level * 0.005 + rankFlat + getCardBucket('defense'));
 }
 function getDefenseFractionNext() {
   const u = game.upgrades.defense;
-  return Math.min(0.90, (u.level + 1) * 0.005 + defenseFraction() + getCardBucket('defense'));
+  const rankFlat = rankFlatBonus('armor');
+  return Math.min(0.75, (u.level + 1) * 0.005 + rankFlat + getCardBucket('defense'));
 }
 
 // === Range === (words, not pixels)
 // Max 100 levels. Band map:
 //   0-19 = Short, 20-39 = Medium, 40-59 = Long, 60-79 = Very Long, 80+ = Edge
-function getRangeLevel() { return game.upgrades.range.level; }
+function getRangeLevel() { return game.upgrades.range.level + rankFlatBonus('range'); }
 function getRange() {
-  const base = 120 + game.upgrades.range.level * 6;
-  return base * labValue(save.labs.range) * (1 + getCardBucket('range'));
+  const effectiveLevel = game.upgrades.range.level + rankFlatBonus('range');
+  const base = 120 + effectiveLevel * 6;
+  return base * (1 + getCardBucket('range'));
 }
 function getRangeNext() {
-  const base = 120 + (game.upgrades.range.level + 1) * 6;
-  return base * labValue(save.labs.range) * (1 + getCardBucket('range'));
+  const effectiveLevel = game.upgrades.range.level + 1 + rankFlatBonus('range');
+  const base = 120 + effectiveLevel * 6;
+  return base * (1 + getCardBucket('range'));
 }
 function rangeLabel(lvl) {
   if (lvl < 20)  return 'Short';
@@ -236,119 +231,123 @@ function rangeLabel(lvl) {
   return 'Edge of Screen';
 }
 
-// === Crit Chance === (1% per level, max 100; cards can push toward cap)
+// === Crit Chance === (1% per in-run level, rank adds flat)
 function getCritChance() {
   const base = game.upgrades.critChance.level * 0.01;
-  return Math.min(1.00, base + labValue(save.labs.critChance) + getCardBucket('crit'));
+  return Math.min(1.00, base + rankFlatBonus('critChance') + getCardBucket('crit'));
 }
 function getCritChanceNext() {
   const base = (game.upgrades.critChance.level + 1) * 0.01;
-  return Math.min(1.00, base + labValue(save.labs.critChance) + getCardBucket('crit'));
+  return Math.min(1.00, base + rankFlatBonus('critChance') + getCardBucket('crit'));
 }
 
-// === Crit Power === (base 2× multiplier, +1% per level → max 3×; card extends)
+// === Crit Power === (rank adds base from 2.0, in-run adds up to +1.0)
 function getCritPower() {
+  const permBase = rankPermanentValue('critPower'); // 2.0 + rank*0.02
   const lvl = game.upgrades.critPower.level * 0.01;
-  return 2.0 + Math.min(1.00, lvl) + labValue(save.labs.critPower) + getCardBucket('critPower');
+  return permBase + Math.min(1.00, lvl) + getCardBucket('critPower');
 }
 function getCritPowerNext() {
+  const permBase = rankPermanentValue('critPower');
   const lvl = (game.upgrades.critPower.level + 1) * 0.01;
-  return 2.0 + Math.min(1.00, lvl) + labValue(save.labs.critPower) + getCardBucket('critPower');
+  return permBase + Math.min(1.00, lvl) + getCardBucket('critPower');
 }
 
 // === Multishot === (clean 3-stat model)
 // Chance: % chance to fire ONE extra shot per target
 // Power: damage multiplier on extra shots (1.0 = full damage, lower = weaker)
-// Targets: max simultaneous targets hit per volley (1 = single, up to 5)
+// Targets: max simultaneous targets hit per volley (1 = single, up to 6)
 function getMultishotChance() {
-  return Math.min(1.00, game.upgrades.multishotChance.level * 0.01 + labValue(save.labs.multiChance) + getCardBucket('multiChance'));
+  return Math.min(1.00, game.upgrades.multishotChance.level * 0.01 + rankFlatBonus('multiChance') + getCardBucket('multiChance'));
 }
 function getMultishotChanceNext() {
-  return Math.min(1.00, (game.upgrades.multishotChance.level + 1) * 0.01 + labValue(save.labs.multiChance) + getCardBucket('multiChance'));
+  return Math.min(1.00, (game.upgrades.multishotChance.level + 1) * 0.01 + rankFlatBonus('multiChance') + getCardBucket('multiChance'));
 }
 function getMultishotPower() {
-  // Starts at 50%, +0.5% per level, caps at 100% at level 100
-  return 0.50 + Math.min(0.50, game.upgrades.multishotPower.level * 0.005) + labValue(save.labs.multiPower) + getCardBucket('multiPower');
+  // Starts at 50%, +0.5% per in-run level, caps at 100% at level 100; rank adds flat
+  return 0.50 + Math.min(0.50, game.upgrades.multishotPower.level * 0.005) + rankFlatBonus('multiPower') + getCardBucket('multiPower');
 }
 function getMultishotPowerNext() {
-  return 0.50 + Math.min(0.50, (game.upgrades.multishotPower.level + 1) * 0.005) + labValue(save.labs.multiPower) + getCardBucket('multiPower');
+  return 0.50 + Math.min(0.50, (game.upgrades.multishotPower.level + 1) * 0.005) + rankFlatBonus('multiPower') + getCardBucket('multiPower');
 }
 function getMultishotTargets() {
-  return 1 + game.upgrades.multishotTargets.level + Math.round(getCardBucket('multiTargetsAdd'));
+  // Base 1 + in-run level + rank level + card
+  return 1 + game.upgrades.multishotTargets.level + rankFlatBonus('multiTargets') + Math.round(getCardBucket('multiTargetsAdd'));
 }
 function getMultishotTargetsNext() {
-  return 1 + (game.upgrades.multishotTargets.level + 1) + Math.round(getCardBucket('multiTargetsAdd'));
+  return 1 + (game.upgrades.multishotTargets.level + 1) + rankFlatBonus('multiTargets') + Math.round(getCardBucket('multiTargetsAdd'));
 }
 
 // Determines how many shots fire per volley
 function rollMultishotCount() {
   const chance = getMultishotChance();
   if (chance <= 0) return 1;
-  return Math.random() < chance ? 2 : 1;  // single extra shot per roll (not chain)
+  return Math.random() < chance ? 2 : 1;
 }
 
 // === Bounce === (same structure as multishot)
 function getBounceChance() {
-  return Math.min(1.00, game.upgrades.bounceChance.level * 0.01 + labValue(save.labs.bounceChance) + getCardBucket('bounceChance'));
+  return Math.min(1.00, game.upgrades.bounceChance.level * 0.01 + rankFlatBonus('bounceChance') + getCardBucket('bounceChance'));
 }
 function getBounceChanceNext() {
-  return Math.min(1.00, (game.upgrades.bounceChance.level + 1) * 0.01 + labValue(save.labs.bounceChance) + getCardBucket('bounceChance'));
+  return Math.min(1.00, (game.upgrades.bounceChance.level + 1) * 0.01 + rankFlatBonus('bounceChance') + getCardBucket('bounceChance'));
 }
 function getBouncePower() {
-  // Starts at 50%, +0.5% per level, caps at 100%
-  return 0.50 + Math.min(0.50, game.upgrades.bouncePower.level * 0.005) + labValue(save.labs.bouncePower) + getCardBucket('bouncePower');
+  return 0.50 + Math.min(0.50, game.upgrades.bouncePower.level * 0.005) + rankFlatBonus('bouncePower') + getCardBucket('bouncePower');
 }
 function getBouncePowerNext() {
-  return 0.50 + Math.min(0.50, (game.upgrades.bouncePower.level + 1) * 0.005) + labValue(save.labs.bouncePower) + getCardBucket('bouncePower');
+  return 0.50 + Math.min(0.50, (game.upgrades.bouncePower.level + 1) * 0.005) + rankFlatBonus('bouncePower') + getCardBucket('bouncePower');
 }
 function getBounceTargets() {
-  return game.upgrades.bounceTargets.level + Math.round(getCardBucket('bounceTargetsAdd'));
+  return game.upgrades.bounceTargets.level + rankFlatBonus('bounceTargets') + Math.round(getCardBucket('bounceTargetsAdd'));
 }
 function getBounceTargetsNext() {
-  return game.upgrades.bounceTargets.level + 1 + Math.round(getCardBucket('bounceTargetsAdd'));
+  return game.upgrades.bounceTargets.level + 1 + rankFlatBonus('bounceTargets') + Math.round(getCardBucket('bounceTargetsAdd'));
 }
 
 // === Lifesteal === (0.25% per level, max 100% = level 400)
 function getLifestealFraction() {
-  return Math.min(1.00, game.upgrades.lifesteal.level * 0.0025 + labValue(save.labs.lifesteal) + getCardBucket('lifesteal'));
+  return Math.min(1.00, game.upgrades.lifesteal.level * 0.0025 + rankFlatBonus('lifesteal') + getCardBucket('lifesteal'));
 }
 function getLifestealFractionNext() {
-  return Math.min(1.00, (game.upgrades.lifesteal.level + 1) * 0.0025 + labValue(save.labs.lifesteal) + getCardBucket('lifesteal'));
+  return Math.min(1.00, (game.upgrades.lifesteal.level + 1) * 0.0025 + rankFlatBonus('lifesteal') + getCardBucket('lifesteal'));
 }
 
-// === Regen === (0.05% max HP/sec per level, cap 10% max HP/sec)
+// === Regen === (0.05% max HP/sec per in-run level, cap 10%, rank adds flat)
 function getRegenPctPerSec() {
-  return Math.min(0.10, game.upgrades.regen.level * 0.0005 + labValue(save.labs.regen) + getCardBucket('regen'));
+  return Math.min(0.10, game.upgrades.regen.level * 0.0005 + rankFlatBonus('regen') + getCardBucket('regen'));
 }
 function getRegenPctPerSecNext() {
-  return Math.min(0.10, (game.upgrades.regen.level + 1) * 0.0005 + labValue(save.labs.regen) + getCardBucket('regen'));
+  return Math.min(0.10, (game.upgrades.regen.level + 1) * 0.0005 + rankFlatBonus('regen') + getCardBucket('regen'));
 }
 function getRegenPerSec() {
   return game.hpMax * getRegenPctPerSec();
 }
 
 // === Economy ===
+// Ranks give flat %: cashBonus adds rank*0.02 to the multiplier
 function getCashMul() {
   const u = game.upgrades.cashBonus;
   const cardBucket = getCardBucket('cash');
-  return (1 + u.level * 0.05) * labValue(save.labs.cashBonus) * (1 + cardBucket);
+  return (1 + u.level * 0.05 + rankFlatBonus('cashBonus')) * (1 + cardBucket);
 }
 function getCashMulNext() {
   const u = game.upgrades.cashBonus;
   const cardBucket = getCardBucket('cash');
-  return (1 + (u.level + 1) * 0.05) * labValue(save.labs.cashBonus) * (1 + cardBucket);
+  return (1 + (u.level + 1) * 0.05 + rankFlatBonus('cashBonus')) * (1 + cardBucket);
 }
 function getWaveBonusMul() {
-  return (1 + game.upgrades.waveBonus.level * 0.15) * labValue(save.labs.waveBonus) * (1 + getCardBucket('waveBonus'));
+  return (1 + game.upgrades.waveBonus.level * 0.15 + rankFlatBonus('waveBonus')) * (1 + getCardBucket('waveBonus'));
 }
 function getWaveBonusMulNext() {
-  return (1 + (game.upgrades.waveBonus.level + 1) * 0.15) * labValue(save.labs.waveBonus) * (1 + getCardBucket('waveBonus'));
+  return (1 + (game.upgrades.waveBonus.level + 1) * 0.15 + rankFlatBonus('waveBonus')) * (1 + getCardBucket('waveBonus'));
 }
 function getComboMaxMul() {
-  return (1 + game.upgrades.combo.level * 0.075) * labValue(save.labs.comboBonus) * (1 + getCardBucket('comboMax'));
+  // Combo bonus has no rank in the spec yet — comboSystems unlock just reveals the in-run combo upgrade.
+  return (1 + game.upgrades.combo.level * 0.075) * (1 + getCardBucket('comboMax'));
 }
 function getComboMaxMulNext() {
-  return (1 + (game.upgrades.combo.level + 1) * 0.075) * labValue(save.labs.comboBonus) * (1 + getCardBucket('comboMax'));
+  return (1 + (game.upgrades.combo.level + 1) * 0.075) * (1 + getCardBucket('comboMax'));
 }
 function getCurrentComboMul() {
   if (game.upgrades.combo.level === 0) return 1;
@@ -361,10 +360,10 @@ function getComboDecayMs() {
   return 5000 + getCardBucket('comboDecay');
 }
 function getBossBountyMul() {
-  return (1 + game.upgrades.bossBounty.level * 0.25) * labValue(save.labs.bossBounty) * (1 + getCardBucket('bossBounty'));
+  return (1 + game.upgrades.bossBounty.level * 0.25 + rankFlatBonus('bossBounty')) * (1 + getCardBucket('bossBounty'));
 }
 function getBossBountyMulNext() {
-  return (1 + (game.upgrades.bossBounty.level + 1) * 0.25) * labValue(save.labs.bossBounty) * (1 + getCardBucket('bossBounty'));
+  return (1 + (game.upgrades.bossBounty.level + 1) * 0.25 + rankFlatBonus('bossBounty')) * (1 + getCardBucket('bossBounty'));
 }
 // Boss damage bonus from cards (applied to projectiles hitting bosses)
 function getBossDamageBonus() {
@@ -449,7 +448,13 @@ function cashTierMul(t) { return Math.pow(1.24, t - 1); }
 function tierMultiplier(tier) { return hpTierMul(tier); }
 
 function enemyHpForWave(wave) {
-  // Base HP 5 so Wave 1 normal enemies die in 1 shot (starting damage is 5).
+  // v0.7.15: Tier 1 onboarding — waves 1-10 get HP = wave number exactly.
+  // So W1 = 1 HP, W2 = 2 HP, ..., W10 = 10 HP. Lets new players breathe.
+  // From W11 onward, normal scaling resumes.
+  if (game.tier === 1 && wave <= 10) {
+    return wave; // 1,2,3,4,5,6,7,8,9,10
+  }
+  // Base HP 5 so regular scaling lands Wave 11 around 11-13 HP.
   return Math.floor(5 * hpWaveMul(wave) * hpTierMul(game.tier));
 }
 function enemySpeedForWave(wave) { return 35 + Math.min(50, wave * 0.25); }
@@ -472,7 +477,7 @@ function coinRewardForRun(maxWave, totalCash) {
   const bossPart = game.bossesDefeated * 8 * Math.pow(1.10, game.tier - 1);
   const coinBonus = (game.upgrades && game.upgrades.coinBonus) ? getCoinBonusMul() : 1;
   const cardCoinGain = 1 + getCardBucket('coinGain');
-  return Math.floor((wavePart + cashPart + bossPart) * labValue(save.labs.coinsPerRun) * coinBonus * cardCoinGain);
+  return Math.floor((wavePart + cashPart + bossPart) * coinBonus * cardCoinGain);
 }
 
 // ============================================================
