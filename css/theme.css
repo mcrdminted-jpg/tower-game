@@ -1,0 +1,60 @@
+/* theme.css — CSS variables and skin palettes
+   Owned by: theme/skin AI. Safe to add new themes here without touching other files. */
+
+  :root, :root[data-theme="neon"] {
+    --bg: #0a0a14; --bg-2: #11112a; --panel: #1a1a3a; --panel-2: #232348;
+    --accent: #00f0ff; --accent-dim: #0088aa; --accent-deep: #003355;
+    --danger: #ff3366; --gold: #ffcc00; --good: #44ff88; --purple: #aa44ff;
+    --cyan2: #66ddff; --text: #e0e0ff; --muted: #6677aa; --glow-on: 1;
+    --grid-color: rgba(0, 240, 255, 0.04);
+  }
+  :root[data-theme="steel"] {
+    --bg: #0f1115; --bg-2: #161a22; --panel: #1e232e; --panel-2: #262c38;
+    --accent: #8ab4d8; --accent-dim: #3e5877; --accent-deep: #22303f;
+    --danger: #d66272; --gold: #d4b66a; --good: #7dc48a; --purple: #9b88b8;
+    --cyan2: #7eb3c9; --text: #c9d1db; --muted: #6a7482; --glow-on: 0;
+    --grid-color: rgba(138, 180, 216, 0.03);
+  }
+  :root[data-theme="amber"] {
+    --bg: #140e08; --bg-2: #1e1610; --panel: #2a1f16; --panel-2: #36281c;
+    --accent: #ffaa44; --accent-dim: #aa6611; --accent-deep: #3a2208;
+    --danger: #dd5544; --gold: #ffdd66; --good: #99cc66; --purple: #cc7744;
+    --cyan2: #ffbb66; --text: #f0e0c0; --muted: #998866; --glow-on: 1;
+    --grid-color: rgba(255, 170, 68, 0.04);
+  }
+  :root[data-theme="forest"] {
+    --bg: #0a1510; --bg-2: #13201a; --panel: #1b2c23; --panel-2: #243a2e;
+    --accent: #6dd47e; --accent-dim: #3a8848; --accent-deep: #1e3b26;
+    --danger: #cc6a5a; --gold: #d4b866; --good: #88dd99; --purple: #8cb890;
+    --cyan2: #7ec987; --text: #d0e0d4; --muted: #668876; --glow-on: 0;
+    --grid-color: rgba(109, 212, 126, 0.04);
+  }
+  :root[data-theme="royal"] {
+    --bg: #0e0a18; --bg-2: #181228; --panel: #221a38; --panel-2: #2e2548;
+    --accent: #b488e8; --accent-dim: #684799; --accent-deep: #332255;
+    --danger: #d66288; --gold: #e0b8e8; --good: #8cc4b8; --purple: #c488ff;
+    --cyan2: #a0a0f0; --text: #e0d4f0; --muted: #7a6a92; --glow-on: 1;
+    --grid-color: rgba(180, 136, 232, 0.04);
+  }
+  :root[data-theme="mono"] {
+    --bg: #0a0a0a; --bg-2: #151515; --panel: #202020; --panel-2: #2a2a2a;
+    --accent: #e0e0e0; --accent-dim: #707070; --accent-deep: #2a2a2a;
+    --danger: #c0c0c0; --gold: #f0f0f0; --good: #a0a0a0; --purple: #909090;
+    --cyan2: #b0b0b0; --text: #f0f0f0; --muted: #606060; --glow-on: 0;
+    --grid-color: rgba(224, 224, 224, 0.03);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: 'SF Mono', 'Menlo', Consolas, monospace;
+    user-select: none; -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  body {
+    display: flex; flex-direction: column;
+    height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }

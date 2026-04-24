@@ -1,0 +1,570 @@
+/* menu.css — main menu, tier picker, submenu bar, global bottom nav, gem orb, card tiles, shop, skins */
+
+  /* ==================== MAIN MENU ==================== */
+  #screen-menu {
+    flex: 1; display: none; flex-direction: column;
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+  #screen-menu.active { display: flex; }
+  /* Overlay mode: menu renders on top of active battlefield, run continues */
+  #screen-menu.overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    bottom: 62px; /* leave room for global nav */
+    background: rgba(8, 12, 22, 0.96);
+    z-index: 40;
+    backdrop-filter: blur(3px);
+    padding-bottom: 20px; /* overlay doesn't need the 96px spacer */
+  }
+  /* "Return to Battle" bar shown only in overlay mode */
+  .return-to-battle {
+    display: none;
+  }
+  #screen-menu.overlay .return-to-battle {
+    display: flex;
+    align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, var(--accent), rgba(0,180,200,0.85));
+    color: var(--bg);
+    padding: 10px 14px;
+    font-weight: bold;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    position: sticky; top: 0;
+    z-index: 5;
+  }
+  .return-to-battle:active { transform: scale(0.99); }
+  .return-to-battle-hp {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    opacity: 0.88;
+  }
+  /* Hide the menu-hero (tier picker, Start button) when in overlay mode —
+     it doesn't apply mid-run. */
+  #screen-menu.overlay .menu-hero,
+  #screen-menu.overlay .tier-row,
+  #screen-menu.overlay .tier-select,
+  #screen-menu.overlay #startBtn,
+  #screen-menu.overlay .menu-bg {
+    display: none;
+  }
+  .menu-hero {
+    padding: 14px 12px 6px; text-align: center;
+    position: relative; z-index: 1;
+  }
+  .menu-title {
+    font-size: 22px; color: var(--accent); font-weight: bold;
+    letter-spacing: 4px;
+    filter: drop-shadow(0 0 calc(var(--glow-on) * 6px) var(--accent));
+    margin-bottom: 4px;
+  }
+  .menu-subtitle {
+    color: var(--muted); font-size: 9px; letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .menu-tagline {
+    color: var(--muted); font-size: 9px;
+    font-style: italic;
+    max-width: 280px; margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .tier-select {
+    margin: 8px 10px;
+    background: var(--panel);
+    border: 1px solid var(--accent-dim);
+    border-radius: 8px;
+    padding: 10px;
+    position: relative; z-index: 1;
+  }
+  .tier-select-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px; gap: 8px;
+  }
+  .tier-select-label { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .tier-select-info { color: var(--muted); font-size: 9px; text-align: right; }
+  .tier-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .tier-arrow {
+    background: var(--accent-deep); border: 1px solid var(--accent);
+    color: var(--accent); font-size: 16px; width: 34px; height: 34px;
+    border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .tier-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
+  .tier-arrow:active:not(:disabled) { background: var(--accent); color: var(--bg); }
+  .tier-display { flex: 1; text-align: center; background: var(--bg-2); border-radius: 5px; padding: 6px; }
+  .tier-num { font-size: 22px; color: var(--accent); font-weight: bold; }
+  .tier-mul { font-size: 10px; color: var(--gold); margin-top: 2px; }
+  .start-btn {
+    width: 100%;
+    background: var(--accent);
+    border: 2px solid var(--accent);
+    color: var(--bg);
+    padding: 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: 6px;
+    box-shadow: 0 0 calc(var(--glow-on) * 10px) var(--accent);
+  }
+  .start-btn:active { transform: scale(0.97); }
+
+  .submenu {
+    background: var(--bg-2);
+    padding: 2px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    margin: 0 10px;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid var(--accent-dim);
+    border-bottom: none;
+    position: relative; z-index: 1;
+  }
+  .submenu-btn {
+    background: none; border: none; color: var(--muted);
+    padding: 7px 2px; font-family: inherit; font-size: 8.5px;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 2px solid transparent; border-radius: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .submenu-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--panel); }
+  .submenu-content {
+    margin: 0 10px 10px;
+    background: var(--panel);
+    border: 1px solid var(--accent-dim);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    padding: 8px 8px 20px 8px;
+    min-height: 200px;
+    position: relative; z-index: 1;
+  }
+
+  /* Lab tab bar (replaces old accordion groups) */
+  .lab-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+  .lab-tab {
+    flex: 1;
+    background: var(--panel-2);
+    border: 1px solid var(--accent-dim);
+    color: var(--muted);
+    padding: 7px 4px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .lab-tab.active {
+    color: var(--accent);
+    background: var(--accent-deep);
+    border-color: var(--accent);
+  }
+  .lab-tab-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lab { background: var(--panel-2); border: 1px solid var(--accent-dim); border-radius: 5px; padding: 8px; margin-bottom: 5px; }
+  .lab-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .lab-name { color: var(--accent); font-weight: bold; font-size: 11px; }
+  .lab-level { color: var(--muted); font-size: 9px; }
+  .lab-desc { color: var(--muted); font-size: 9px; margin-bottom: 3px; line-height: 1.3; }
+  .lab-stat { color: var(--good); font-size: 10px; margin-bottom: 4px; }
+  .lab-buy {
+    width: 100%; background: var(--accent-deep); border: 1px solid var(--accent);
+    color: var(--text); padding: 6px; border-radius: 3px;
+    font-family: inherit; font-size: 10px; cursor: pointer;
+  }
+  .lab-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+  .lab-buy:active:not(:disabled) { background: var(--accent); color: var(--bg); }
+  .lab-buy.maxed { background: var(--good); color: var(--bg); border-color: var(--good); }
+
+  .placeholder {
+    text-align: center; color: var(--muted); padding: 24px 8px;
+    font-size: 11px; line-height: 1.6;
+  }
+  .placeholder b { color: var(--accent); }
+
+  .setting-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--accent-dim);
+    border-radius: 5px;
+    margin-bottom: 5px;
+    gap: 8px;
+  }
+  .setting-label { font-size: 11px; }
+  .setting-desc { color: var(--muted); font-size: 9px; margin-top: 1px; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--bg);
+    border: 1px solid var(--accent-dim);
+    border-radius: 11px;
+    cursor: pointer; position: relative;
+    transition: background 0.15s; flex-shrink: 0;
+  }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; background: var(--text); border-radius: 50%;
+    transition: left 0.15s;
+  }
+  .toggle.on::after { left: 20px; background: var(--bg); }
+
+  .theme-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .theme-opt {
+    padding: 8px 4px; text-align: center;
+    border: 1px solid var(--accent-dim);
+    border-radius: 5px; font-size: 10px; cursor: pointer;
+    background: var(--panel-2);
+  }
+  .theme-opt.active { border-color: var(--accent); background: var(--accent-deep); color: var(--accent); }
+  .theme-swatch { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+  .theme-swatch-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+
+
+  /* ==================== GLOBAL BOTTOM NAV ==================== */
+  .global-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, rgba(14,18,30,0.92), rgba(8,12,22,0.98));
+    border-top: 1px solid var(--accent-dim);
+    display: flex;
+    z-index: 50;
+    padding: 4px 2px calc(env(safe-area-inset-bottom, 2px) + 2px);
+    backdrop-filter: blur(6px);
+  }
+  .global-nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 6px 2px 4px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    position: relative;
+    transition: color 0.15s;
+  }
+  .global-nav-btn:active { transform: scale(0.95); }
+  .global-nav-btn.active {
+    color: var(--accent);
+  }
+  .global-nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 15%; right: 15%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 0 calc(var(--glow-on) * 4px) var(--accent);
+  }
+  .global-nav-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+  .global-nav-label {
+    font-size: 6.5px;
+    letter-spacing: 0.3px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  /* When nav is visible, menu and battle screens need bottom padding
+     so nothing gets hidden behind it. The body flex layout already
+     handles the battle screen (upgrades are above nav). Menu screen
+     just needs a spacer — handled by padding on screen-menu. */
+  #screen-menu {
+    padding-bottom: 96px;
+  }
+  #screen-battle {
+    padding-bottom: 70px;
+  }
+
+
+  /* ============== GEM ORB (side-lane bonus) ============== */
+  .gem-orb {
+    position: absolute;
+    right: 14px;
+    top: 35%;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%,
+      rgba(220, 180, 255, 1) 0%,
+      var(--purple) 55%,
+      #5a2a88 100%);
+    border: 2px solid var(--purple);
+    box-shadow: 0 0 calc(var(--glow-on) * 14px) var(--purple),
+                0 0 calc(var(--glow-on) * 28px) rgba(170, 68, 255, 0.5);
+    cursor: pointer;
+    z-index: 12;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    animation: orb-bob 2.2s ease-in-out infinite;
+    transition: opacity 0.4s, transform 0.25s;
+  }
+  .gem-orb::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px dashed var(--purple);
+    opacity: 0.4;
+    animation: orb-ring 2.5s linear infinite;
+    pointer-events: none;
+  }
+  .gem-orb.fading { opacity: 0; transform: scale(0.6); pointer-events: none; }
+  .gem-orb.claimed {
+    pointer-events: none;
+    animation: orb-burst 0.45s ease-out forwards;
+  }
+  @keyframes orb-bob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%       { transform: translateY(-8px) scale(1.03); }
+  }
+  @keyframes orb-ring {
+    from { transform: rotate(0deg) scale(1); opacity: 0.4; }
+    to   { transform: rotate(360deg) scale(1.4); opacity: 0; }
+  }
+  @keyframes orb-burst {
+    0%   { transform: scale(1);   opacity: 1; }
+    60%  { transform: scale(2.2); opacity: 0.7; }
+    100% { transform: scale(3);   opacity: 0; }
+  }
+
+  /* Ad-bonus pill appears where orb was tapped */
+  .ad-pill {
+    position: absolute;
+    right: 8px;
+    top: 35%;
+    background: var(--bg-2);
+    border: 1px solid var(--purple);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 12;
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 calc(var(--glow-on) * 8px) var(--purple);
+    animation: pill-in 0.25s ease-out forwards;
+    white-space: nowrap;
+  }
+  .ad-pill:active { transform: scale(0.95); }
+  .ad-pill.fading { opacity: 0; transition: opacity 0.3s; }
+  @keyframes pill-in {
+    from { opacity: 0; transform: translateX(20px) scale(0.8); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .ad-pill .gem-icon { color: var(--purple); font-size: 12px; }
+  .ad-pill .ad-label { color: var(--gold); }
+
+/* ==================== TOURNAMENT TAB ==================== */
+.tourney-header {
+  margin-bottom: 12px;
+}
+.tourney-band-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tourney-band-info { display: flex; flex-direction: column; gap: 4px; }
+.tourney-band-name {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.tourney-league-pill {
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: inline-block;
+  align-self: flex-start;
+}
+.tourney-timer {
+  text-align: right;
+  min-width: 70px;
+}
+.tourney-timer-label {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.tourney-timer-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--gold);
+}
+
+.tourney-rank-card {
+  background: var(--panel-2);
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.tourney-rank-row {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 6px;
+}
+.tourney-rank-num {
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 1;
+}
+.tourney-rank-of {
+  font-size: 11px;
+  color: var(--muted);
+}
+.tourney-zone-label {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.tourney-best-row {
+  display: flex; justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+}
+.tourney-best-row b { color: var(--text); }
+
+.tourney-entries-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 8px 0;
+  font-size: 10px;
+  color: var(--muted);
+}
+.tourney-entries-row b { color: var(--text); }
+.tourney-play-btn {
+  background: linear-gradient(180deg, var(--gold), #d4a800);
+  color: var(--bg);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 0 calc(var(--glow-on) * 8px) rgba(255,204,0,0.4);
+}
+.tourney-play-btn:active { transform: scale(0.97); }
+.tourney-entries-done {
+  color: var(--muted);
+  font-size: 9px;
+  font-style: italic;
+}
+
+.tourney-zones-legend {
+  display: flex; justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  padding: 4px 0;
+  border-top: 1px solid var(--accent-dim);
+}
+.tourney-zone-chip { font-weight: bold; }
+
+.tourney-last-result {
+  background: var(--panel);
+  border: 1px solid var(--accent-dim);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.tourney-last-title {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.tourney-last-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  font-size: 10px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.tourney-last-grid b { display: block; font-size: 13px; color: var(--text); }
+.tourney-last-league {
+  font-size: 10px;
+  color: var(--accent);
+  text-align: center;
+  font-weight: bold;
+}
+
+.tourney-board-title {
+  color: var(--accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 10px 0 4px;
+  font-weight: bold;
+}
+.tourney-board {
+  background: var(--panel);
+  border: 1px solid var(--accent-dim);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tourney-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--accent-dim);
+}
+.tourney-row:last-child { border-bottom: none; }
+.tourney-row.is-player {
+  background: rgba(0,240,255,0.08);
+  font-weight: bold;
+}
+.tourney-row-rank {
+  min-width: 32px;
+  font-weight: bold;
+}
+.tourney-row-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tourney-row-wave {
+  color: var(--gold);
+  font-weight: bold;
+}
+.tourney-board-gap {
+  padding: 2px 10px;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  border-bottom: 1px solid var(--accent-dim);
+}

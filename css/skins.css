@@ -1,0 +1,122 @@
+/* ============================================================
+   skins.css — Core Surge skin system
+   ------------------------------------------------------------
+   Owned by: UI/skin AI. Additive only. Does not modify existing
+   .tower or .battlefield rules; layers on top via attribute selectors.
+
+   Hooks (stable, per README):
+     #tower[data-core-skin="X"]       — swap Core art
+     #battlefield[data-bg-skin="X"]   — swap battlefield backdrop
+     .skin-tile[data-kind][data-skin] — preview tiles in the Skins tab
+
+   All skins default to the existing CSS look when no data-attr is set,
+   so removing this file does not break the game.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   CORE SKINS — applied to #tower
+   The existing .tower-base / .tower-core are hidden when a skin
+   is active; the skin image replaces them via a pseudo-element.
+   ------------------------------------------------------------ */
+#tower[data-core-skin] .tower-base,
+#tower[data-core-skin] .tower-core {
+  opacity: 0;
+}
+
+#tower[data-core-skin]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Subtle idle pulse so the core doesn't feel dead */
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  pointer-events: none;
+  z-index: 2;
+}
+
+#tower[data-core-skin="sentinel"]::before   { background-image: url("../assets/cores/core_01_sentinel.png"); }
+#tower[data-core-skin="industrial"]::before { background-image: url("../assets/cores/core_02_industrial.png"); }
+#tower[data-core-skin="verdant"]::before    { background-image: url("../assets/cores/core_03_verdant.png"); }
+#tower[data-core-skin="aegis"]::before      { background-image: url("../assets/cores/core_04_aegis.png"); }
+#tower[data-core-skin="frost"]::before      { background-image: url("../assets/cores/core_05_frost.png"); }
+#tower[data-core-skin="royal"]::before      { background-image: url("../assets/cores/core_06_royal.png"); }
+
+/* Optional glow color hint per skin — reuses existing --accent var if themes want it.
+   These are deliberately subtle; combat effects still drive the main feel. */
+#tower[data-core-skin="sentinel"]   { --core-glow: #4ab8ff; }
+#tower[data-core-skin="industrial"] { --core-glow: #ff8a33; }
+#tower[data-core-skin="verdant"]    { --core-glow: #4fe0a6; }
+#tower[data-core-skin="aegis"]      { --core-glow: #b266ff; }
+#tower[data-core-skin="frost"]      { --core-glow: #66c8ff; }
+#tower[data-core-skin="royal"]      { --core-glow: #ff5fd0; }
+
+/* ------------------------------------------------------------
+   BACKGROUND SKINS — applied to #battlefield
+   ------------------------------------------------------------ */
+#battlefield[data-bg-skin]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Darken so enemies + tower read clearly over the busy art */
+  filter: brightness(0.72) saturate(0.95);
+  z-index: 0;
+  pointer-events: none;
+}
+/* Make sure live gameplay elements stay above the bg layer */
+#battlefield[data-bg-skin] > * {
+  position: relative;
+  z-index: 1;
+}
+
+#battlefield[data-bg-skin="cyber_grid"]::before { background-image: url("../assets/backgrounds/bg_01_cyber_grid.png"); }
+#battlefield[data-bg-skin="industrial"]::before { background-image: url("../assets/backgrounds/bg_02_industrial.png"); }
+#battlefield[data-bg-skin="organic"]::before    { background-image: url("../assets/backgrounds/bg_03_organic.png"); }
+#battlefield[data-bg-skin="steel"]::before      { background-image: url("../assets/backgrounds/bg_04_steel.png"); }
+
+/* ------------------------------------------------------------
+   SKIN TILE PREVIEWS — Skins tab in the menu
+   Overrides the placeholder gradient previews with the real art.
+   Keeps existing .skin-tile layout from menu.css intact.
+   ------------------------------------------------------------ */
+.skin-tile[data-kind="core"] .skin-preview {
+  /* Wipe the inline radial-gradient fallback cleanly */
+  background: linear-gradient(180deg, #0a1422 0%, #1a2a44 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+.skin-tile[data-kind="core"] .skin-preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 75%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.skin-tile[data-kind="core"] .skin-preview .skin-preview-core {
+  display: none; /* placeholder dot no longer needed */
+}
+
+.skin-tile[data-kind="core"][data-skin="sentinel"]   .skin-preview::after { background-image: url("../assets/cores/core_01_sentinel.png"); }
+.skin-tile[data-kind="core"][data-skin="industrial"] .skin-preview::after { background-image: url("../assets/cores/core_02_industrial.png"); }
+.skin-tile[data-kind="core"][data-skin="verdant"]    .skin-preview::after { background-image: url("../assets/cores/core_03_verdant.png"); }
+.skin-tile[data-kind="core"][data-skin="aegis"]      .skin-preview::after { background-image: url("../assets/cores/core_04_aegis.png"); }
+.skin-tile[data-kind="core"][data-skin="frost"]      .skin-preview::after { background-image: url("../assets/cores/core_05_frost.png"); }
+.skin-tile[data-kind="core"][data-skin="royal"]      .skin-preview::after { background-image: url("../assets/cores/core_06_royal.png"); }
+
+.skin-tile[data-kind="bg"] .skin-preview {
+  background-size: cover !important;
+  background-position: center !important;
+}
+.skin-tile[data-kind="bg"][data-skin="cyber_grid"] .skin-preview { background-image: url("../assets/backgrounds/bg_01_cyber_grid.png") !important; }
+.skin-tile[data-kind="bg"][data-skin="industrial"] .skin-preview { background-image: url("../assets/backgrounds/bg_02_industrial.png") !important; }
+.skin-tile[data-kind="bg"][data-skin="organic"]    .skin-preview { background-image: url("../assets/backgrounds/bg_03_organic.png") !important; }
+.skin-tile[data-kind="bg"][data-skin="steel"]      .skin-preview { background-image: url("../assets/backgrounds/bg_04_steel.png") !important; }

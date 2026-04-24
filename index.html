@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<!--
+  =======================================================================
+  CORE SURGE: Endless Tower Defense — v0.7.14 "Real Skins"
+  =======================================================================
+  v0.7.14 changes:
+  - Real Core skin art wired in (6 skins: Sentinel, Industrial, Verdant,
+    Aegis, Frost, Royal). Tap in Skins tab → equips on battlefield.
+  - Real Background skin art wired in (4 backgrounds: Cyber Grid,
+    Reactor, Organic, Steel Bay).
+  - Skin choices persist across runs. Zero gameplay effect.
+  - Enemy + VFX sprite library shipped in /assets/ but not yet wired
+    (that needs render.js / game.js work, not skin scope).
+
+  v0.7.13 changes:
+  - Tournament system added. Progression bands (T1-2 through T18+),
+    5-league ladder (Copper → Platinum), 250-player brackets, 72-hour
+    cycles, 3 entries per cycle, synthetic competitors until population
+    scales. Rewards scale by band × league × placement.
+  - Top 10% promote, bottom 15% demote at cycle end.
+  - Dev panel: force cycle end, reset bracket.
+
+  v0.7.12 changes:
+  - Research now covers every battle upgrade. Added 13 new labs:
+    Fire Rate, Crit Chance, Crit Power, Multishot, Multi Power,
+    Bounce, Bounce Power, Range, Lifesteal, Regen, Wave Bonus,
+    Boss Bounty, Combo Max. Each lab stacks multiplicatively with
+    in-run upgrades and cards.
+  - Research tab gains a Defense subtab (split from Combat). Now:
+    Offense / Defense / Economy / Utility. Cleaner organization.
+  - Every in-run upgrade getter now reads its matching lab so
+    permanent progression actually accelerates run performance.
+  - Save migration preserves all existing progress. New labs default
+    to level 0.
+
+  v0.7.11 changes:
+  - Brand: game is now Core Surge. The in-game object is a "Core" that
+    the player defends. UI terminology updated throughout: Battle,
+    Research, Loadout, Store, Skins, Settings. "Tower" remains only in
+    the subtitle "Endless Tower Defense" for store SEO.
+  - Light-flavor stat rename: Attack Speed → Fire Rate, Defense → Armor,
+    Tower HP → Core Integrity. Damage, Crit, Range etc. stay plain.
+  - New Skins tab in bottom nav (6 slots now). Core skins + Background
+    skins (placeholders for now — gameplay unchanged).
+  - Tier picker button label: "Start Battle" → "Begin Defense"
+  - Death screen: "Tower fell" → "Core Lost"
+
+  v0.7.10 changes:
+  - Menus open during battle without ending the run. Labs, Goals, Cards,
+    Shop, Settings all overlay the battlefield; a "Return to Battle" bar
+    at the top shows live HP and wave count. Enemies keep moving, tower
+    keeps firing, cash keeps flowing. If the tower dies mid-browse, the
+    death screen shows immediately.
+  - Damage and HP display now show one decimal on small numbers, so at
+    L10 damage reads "5.5" instead of rounding to "5".
+  - Multishot/Bounce chance and power use one-decimal precision.
+  - Card tiles, slot tiles, and bucket summary now show "+0.2%" for tiny
+    values instead of rounding to "+0%".
+  - More bottom padding on menu/battle screens so content clears the
+    global nav on all phones.
+
+  v0.7.9 changes:
+  - Card acquisition: random pull 20 gems, 10-pull bundle 180 gems,
+    Standard direct unlock 60 gems, Prime direct unlock 180 gems.
+    Apex NOT directly unlockable — shard/pity only (v0.8+).
+  - Card leveling via duplicates: Standard L5 = 12 copies total;
+    Prime L5 = 14; Apex L5 = 16. Wildcards can substitute for copies
+    (wildcards ship in v0.8 with packs).
+  - Slot ladder: start 3 slots, unlock to 10 via gems (Slot 4=100,
+    5=200, 6=350, 7=550, 8=800, 9=1100, 10=1500). Total to 10: 4,600
+    gems. Extends to 12 later with 2000+2600 gems.
+  - Shop tab: vertical scroll fixed, now shows card packs and slot
+    unlock prices alongside gem ad/skins.
+  - Dev panel: now scrolls past global nav (was clipped behind).
+  - Buy multiplier pill moved to the END side of top HUD (opposite heal).
+  - Card pack pull animation placeholder — spends gems, rolls a card.
+
+  v0.7.8 was Combat Loop + Full Cards + Persistent Nav:
+  - Enemies no longer suicide on tower contact. They stop at melee range
+    and attack continuously using their own attack speed. Shooter enemies
+    stay at medium range and fire projectiles.
+  - Coin Bonus in-run upgrade: multiplies end-run coin reward (max 1.5×
+    at level 50, premium-priced).
+  - Persistent bottom nav bar: LABS / COIN UPG / SHOP / SETTINGS shown
+    during battle too. Tap to open the menu tab directly.
+  - Full 25-card pool: 12 Standard, 8 Prime, 5 Apex.
+  - Special card mechanics: Storm Thread chain arcs, Bulwark Veil
+    overshield, Time Lock periodic slow, Last Stand fatal-damage save.
+  - Tower skin placeholders in Shop (Neon default, Crimson/Emerald/
+    Royal/Obsidian coming soon).
+  - Cost pills in in-run upgrades use $ (cash) not ⊙ (coins).
+  - Side buttons (speed, stats) moved lower on battlefield for thumb reach.
+
+  v0.7.7 was Battle Reskin:
+
+  v0.7.6 was Card Infrastructure:
+
+  v0.7.5 changes:
+  - Goals tab: tier tabs with badge for ready-to-claim.
+  - Shop tab: compact "coming soon" items instead of walls of placeholder.
+
+  v0.7.4 changes:
+  - Tower visibility fixes (CSS + ResizeObserver).
+
+  =======================================================================
+  TOWER — v0.7.4 "Tower Visibility Fix"
+  =======================================================================
+  v0.7.4 changes:
+  - Tower position: moved from 66% to 55% of battlefield height (higher up).
+  - Upgrade panel max-height: now min(280px, 46vh) — scales down on short
+    phone screens so battlefield always gets at least half the viewport.
+  - updateBfRect now runs AFTER renderUpgrades so tower position uses
+    the final battlefield size (upgrade panel eats space).
+  - ResizeObserver watches battlefield for iOS toolbar layout shifts.
+
+  v0.7.3 changes:
+  - Labs tab converted to tabs (Combat / Economy / Utility) — one at a time.
+
+  v0.7.2 changes:
+  - Floating gem orbs: spawn in side-lane on right edge, bob gently,
+    tap for +2 gems, then optional "+3 ad bonus" pill. First orb @ 2min,
+    then every 6-8 min of active play. Never spawn during boss banner,
+    death screen, or menus.
+  - Shop tab: "Watch ad → +20 gems" daily reward (1 per 24h).
+  - Ad simulation overlay (30s countdown, skippable after 5s) — real
+    ad SDK plugs in here later.
+  - Gem counter pulses on earn.
+
+  v0.7.1 changes:
+  - Fixed hold-to-buy bug where quick taps triggered auto-buy (taps
+    registered as holds). Now: tap = 1 buy, hold past 300ms = rapid.
+  - Gems drop on boss kills (1 at T1, scales with tier; +2 every 5 bosses).
+  - Gem drop shown as floating text + on end-run screen.
+
+  v0.7.0 was the big combat overhaul:
+    Offense:
+     - Damage (max 5000, piecewise scaling)
+     - Attack Speed (max 5000, 65% of damage curve)
+     - Crit Chance (100, +1%/level)
+     - Crit Power (100, +1% crit damage, base ×2, max ×3)
+     - Multishot Chance (100, +1%/level)
+     - Multishot Power (100, +1% dmg on extra shots)
+     - Multishot Targets (max 5, expensive)
+     - Bounce Chance (100, +1%/level)
+     - Bounce Power (100, +1% dmg retained)
+     - Bounce Targets (max 5, number of bounces)
+    Defense:
+     - Tower HP (max 5000, piecewise)
+     - Defense (max 180, +0.5%/level, cap 90%)
+     - Range (max 100, displayed as Short/Medium/Long/Very Long/Edge)
+     - Lifesteal (max 400, +0.25%/level, cap 100%)
+     - Regen (max 200, +0.05% max HP/sec, cap 10%)
+    Economy:
+     - Cash Bonus, Wave Bonus, Combo, Boss Bounty (unchanged)
+    Action: Heal
+
+  New UI: x1/x10/x100/Max buy multiplier. Clearer status bar.
+  New math: bucket-combine for future cards/relics compatibility.
+
+  v0.6.3 changes below:
+  - Piecewise wave scaling, split tier multipliers.
+  - Upgrade cost curves tightened.
+  - Hold-to-buy with acceleration.
+  - Dev gear icon in battle HUD.
+
+  DESIGN PRINCIPLES (anti-rules):
+   1. Never require the app to be open. Offline progression is REAL.
+   2. F2P baseline feels good. Payers go faster, not further.
+   3. No pay-to-play, no pay-to-catch-up.
+   4. No rug pulls.
+   5. No forced ads, no double-length ads. Opt-in, exact duration.
+   6. Reliable cloud saves (when backend comes).
+   7. No excessive device load. Idle gracefully.
+   8. Early game must not be boring.
+   9. No bait-and-switch bonuses.
+  10. Tournaments fair — bracketed by progression.
+  =======================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Core Surge — v0.7.14</title>
+<!-- CSS: modular, split for AI co-work. See /css/*.css.
+     theme.css must come first (defines :root vars used by others). -->
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/battle.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/skins.css">
+</head>
+</head>
+<body>
+
+<div class="hud" id="hud"></div>
+
+<div class="live-stats" id="liveStats"></div>
+
+<!-- MAIN MENU -->
+<div id="screen-menu" class="active">
+  <button class="return-to-battle" id="returnToBattleBtn">
+    <span>◂ Return to Battle</span>
+    <span class="return-to-battle-hp" id="returnToBattleHp"></span>
+  </button>
+  <div class="menu-bg"></div>
+  <div class="menu-hero">
+    <div class="menu-title">CORE SURGE</div>
+    <div class="menu-subtitle">Endless Tower Defense</div>
+    <div class="menu-tagline" id="menuTagline"></div>
+  </div>
+  <div class="tier-select">
+    <div class="tier-select-header">
+      <span class="tier-select-label">Difficulty Tier</span>
+      <span class="tier-select-info" id="tierInfo"></span>
+    </div>
+    <div class="tier-row">
+      <button class="tier-arrow" id="tierDown">‹</button>
+      <div class="tier-display">
+        <div class="tier-num">T<span id="tierSelected">1</span></div>
+        <div class="tier-mul" id="tierMul"></div>
+      </div>
+      <button class="tier-arrow" id="tierUp">›</button>
+    </div>
+    <button class="start-btn" id="startBtn">Begin Defense</button>
+  </div>
+  <div class="submenu" id="submenu">
+    <button class="submenu-btn active" data-tab="labs">Research</button>
+    <button class="submenu-btn" data-tab="milestones">Goals</button>
+    <button class="submenu-btn" data-tab="cards">Loadout</button>
+    <button class="submenu-btn" data-tab="tournament">Tourney</button>
+    <button class="submenu-btn" data-tab="shop">Store</button>
+    <button class="submenu-btn" data-tab="skins">Skins</button>
+    <button class="submenu-btn" data-tab="settings">Settings</button>
+  </div>
+  <div class="submenu-content" id="submenuContent"></div>
+</div>
+
+<!-- BATTLE -->
+<div id="screen-battle">
+  <div class="status">
+    <!-- HP bar moved up, styled as big pink shaped bar -->
+    <div class="hp-bar-wrap">
+      <div class="hp-bar">
+        <div class="hp-fill" id="hpFill"></div>
+        <div class="hp-icon">♥</div>
+        <div class="hp-text" id="hpText">100 / 100</div>
+      </div>
+    </div>
+
+    <!-- Icon grid: Tier | Wave | Cash | Kills -->
+    <div class="status-grid">
+      <div class="status-cell">
+        <span class="status-icon" style="color:var(--purple)">⛰</span>
+        <span class="status-label">TIER</span>
+        <span class="status-val" id="battleTier">1</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-cell">
+        <span class="status-icon" style="color:var(--accent)">◎</span>
+        <span class="status-label">WAVE</span>
+        <span class="status-val" id="waveNum">1</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-cell">
+        <span class="status-icon" style="color:var(--good)">$</span>
+        <span class="status-label">CASH</span>
+        <span class="status-val" id="cashDisp">0</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-cell">
+        <span class="status-icon" style="color:var(--danger)">◎</span>
+        <span class="status-label">KILLS</span>
+        <span class="status-val" id="waveProg">0/10</span>
+      </div>
+    </div>
+
+    <!-- End-run gold pill -->
+    <div class="coin-banner-pill">END RUN NOW <span class="banner-arrow">→</span> RECEIVE <span class="banner-coin-icon">⊙</span> <b id="coinPreview">0</b></div>
+  </div>
+
+  <div class="battlefield-wrap">
+    <!-- Left side column: speed selector -->
+    <div class="bf-side bf-side-left">
+      <button class="bf-side-btn" id="bfSpeedBtn">
+        <div class="bf-side-icon">⏩</div>
+        <div class="bf-side-value" id="bfSpeedValue">×1</div>
+      </button>
+    </div>
+
+    <div class="battlefield" id="battlefield">
+      <div class="range-ring" id="rangeRing"></div>
+      <div class="tower" id="tower">
+        <div class="tower-base"></div>
+        <div class="tower-core"></div>
+      </div>
+    </div>
+
+    <!-- Right side column: stats button -->
+    <div class="bf-side bf-side-right">
+      <button class="bf-side-btn" id="bfStatsBtn">
+        <div class="bf-side-icon">📊</div>
+        <div class="bf-side-value">STATS</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="upgrades-wrap" id="upgradesWrap"></div>
+</div>
+
+<!-- PERSISTENT BOTTOM NAV (always visible) -->
+<div class="global-nav" id="globalNav">
+  <button class="global-nav-btn" data-nav="labs">
+    <span class="global-nav-icon">🧪</span>
+    <span class="global-nav-label">RESEARCH</span>
+  </button>
+  <button class="global-nav-btn" data-nav="milestones">
+    <span class="global-nav-icon">🎯</span>
+    <span class="global-nav-label">GOALS</span>
+  </button>
+  <button class="global-nav-btn" data-nav="cards">
+    <span class="global-nav-icon">🎴</span>
+    <span class="global-nav-label">LOADOUT</span>
+  </button>
+  <button class="global-nav-btn" data-nav="tournament">
+    <span class="global-nav-icon">🏆</span>
+    <span class="global-nav-label">TOURNEY</span>
+  </button>
+  <button class="global-nav-btn" data-nav="shop">
+    <span class="global-nav-icon">🛒</span>
+    <span class="global-nav-label">STORE</span>
+  </button>
+  <button class="global-nav-btn" data-nav="skins">
+    <span class="global-nav-icon">🎨</span>
+    <span class="global-nav-label">SKINS</span>
+  </button>
+  <button class="global-nav-btn" data-nav="settings">
+    <span class="global-nav-icon">⚙</span>
+    <span class="global-nav-label">SETTINGS</span>
+  </button>
+</div>
+
+<!-- END OVERLAY -->
+<div class="end-overlay" id="endOverlay">
+  <div class="end-card">
+    <div class="end-title" id="endTitle">Core Lost</div>
+    <div class="end-stats" id="endStats"></div>
+    <button class="end-btn" id="endMenuBtn">Back to Menu</button>
+  </div>
+</div>
+
+<!-- DEV PANEL -->
+<div class="dev-panel" id="devPanel">
+  <div class="dev-header">
+    <span>⚙ DEV PANEL</span>
+    <button class="dev-header-close" id="devClose">Close</button>
+  </div>
+  <div class="dev-body" id="devBody"></div>
+</div>
+
+<!-- OFFLINE TOAST -->
+<div class="offline-toast" id="offlineToast" style="display:none">
+  <span id="offlineMsg"></span>
+  <span class="close" onclick="document.getElementById('offlineToast').style.display='none'">✕</span>
+</div>
+
+<!-- AD OVERLAY (simulated) -->
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-sim-label">— Simulated Ad —</div>
+  <div class="ad-sim-title" id="adSimTitle">Supporting the devs</div>
+  <div class="ad-sim-body" id="adSimBody">Real ads will be rewarded, opt-in, and never interrupt gameplay. This is a placeholder.</div>
+  <div class="ad-sim-countdown" id="adSimCountdown">30</div>
+  <button class="ad-sim-skip" id="adSimSkip" disabled>Please wait...</button>
+  <div class="ad-sim-note">v0.7.2 · ad SDK plugs in here</div>
+</div>
+
+<!-- JS: modular, split for AI co-work. See /js/*.js.
+     Load order matters: data → save → game → render → ui → main.
+     No ES modules — all top-level functions/vars are global. -->
+<script src="js/data.js"></script>
+<script src="js/save.js"></script>
+<script src="js/game.js"></script>
+<script src="js/tournament.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+<script src="js/skins.js"></script>
+</body>
+</html>
