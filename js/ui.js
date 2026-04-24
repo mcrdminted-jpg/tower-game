@@ -881,8 +881,8 @@ function renderLabsTab(c) {
   for (let i = 0; i < 4; i++) {
     const fid = famIds[i];
     if (!fid || !UNLOCK_FAMILIES[fid]) {
-      html += `<div class="mor-fam" aria-hidden="true" disabled>
-        <div class="mor-fam-name" style="opacity:0.25">—</div>
+      html += `<div class="mor-fam mor-fam-empty" aria-hidden="true">
+        <div class="mor-fam-name" style="opacity:0.2">—</div>
       </div>`;
       continue;
     }

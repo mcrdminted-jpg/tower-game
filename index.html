@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.21 "Profile"
+  CORE SURGE: Endless Tower Defense — v0.7.22 "Mockup Overlay (Research)"
   =======================================================================
+  v0.7.22 changes:
+  - Research panel now paints the ChatGPT-generated mockup art as a
+    decorative header with real HTML positioned into the painted slots:
+      · Title pill shows the "RESEARCH" neon gradient label
+      · 4 sub-tabs: Combat / Defense / Economy / Utility
+        (Combat-active by default; tapping filters rank rows below)
+      · 4 family-unlock cards (card icons are painted, real buy buttons
+        overlay them). Shows "UNLOCKED" on owned families.
+  - Rank rows below the overlay flow normally and are filtered to match
+    the active sub-tab. Starter ranks (damage, fireRate, coreHealth,
+    armor, range, cashBonus) appear in their natural categories.
+  - Proof-of-concept for the mockup-overlay pattern. If this looks good,
+    same technique extends to Home, Loadout, Goals, Store, Settings,
+    Skins, Tournament — one mockup asset per panel.
+  - No gameplay math, save format, nav, or sprite changes.
+  - New asset: assets/mockups/research_hdr.png (cropped header, 941x520)
+  - New CSS file: css/mockup-overlay.css
+
   v0.7.21 changes:
   - Added username / profile system. On first boot, a name like
     "Player_4829" is auto-assigned. Change it in Settings → Profile.
@@ -280,7 +298,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.21</title>
+<title>Core Surge — v0.7.22</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">
@@ -289,6 +307,7 @@
 <link rel="stylesheet" href="css/menu.css">
 <link rel="stylesheet" href="css/skins.css">
 <link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/mockup-overlay.css">
 </head>
 </head>
 <body>
