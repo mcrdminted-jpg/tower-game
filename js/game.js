@@ -395,10 +395,7 @@ function upgradeDescriptor(key) {
     case 'health':           return { cur: formatStat(getMaxHp()), next: formatStat(getMaxHpNext()), unit: ' HP' };
     case 'defense':          return { cur: (getDefenseFraction() * 100).toFixed(1), next: (getDefenseFractionNext() * 100).toFixed(1), unit: '%' };
     case 'range': {
-      const cur = game.upgrades.range.level;
-      const curLbl = rangeLabel(cur);
-      const nxtLbl = rangeLabel(cur + 1);
-      return { cur: curLbl, next: nxtLbl, unit: '' };
+      return { cur: Math.round(getRange()), next: Math.round(getRangeNext()), unit: ' range' };
     }
     case 'critChance':       return { cur: (getCritChance() * 100).toFixed(0), next: (getCritChanceNext() * 100).toFixed(0), unit: '%' };
     case 'critPower':        return { cur: '×' + getCritPower().toFixed(2), next: '×' + getCritPowerNext().toFixed(2), unit: '' };

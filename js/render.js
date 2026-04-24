@@ -10,7 +10,7 @@ function updateBfRect() {
   if (!game.bf) return;
   game.bfRect = game.bf.getBoundingClientRect();
   game.towerX = game.bfRect.width / 2;
-  game.towerY = game.bfRect.height * 0.55; // centered vertically in visible battlefield
+  game.towerY = game.bfRect.height * 0.50; // truly centered
   if (game.towerEl) {
     game.towerEl.style.left = game.towerX + 'px';
     game.towerEl.style.top = game.towerY + 'px';
@@ -38,9 +38,21 @@ function render() {
       e.hpFillEl.className = 'enemy-hp-fill';
       e.hpEl.appendChild(e.hpFillEl);
       e.el.appendChild(e.hpEl);
+      // Inner sprite element that rotates independently so the HP bar
+      // stays flat while the enemy body rotates toward the tower.
+      e.spriteEl = document.createElement('div');
+      e.spriteEl.className = 'enemy-sprite';
+      e.el.appendChild(e.spriteEl);
       game.bf.appendChild(e.el);
     }
     e.el.style.transform = `translate(${e.x}px, ${e.y}px) translate(-50%, -50%)`;
+    // v0.7.19: rotate sprite toward tower. atan2 gives radians; convert to deg.
+    // +90 because sprite art is drawn "facing up" by default; we want them facing
+    // the tower which is below/center.
+    const dx = game.towerX - e.x;
+    const dy = game.towerY - e.y;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+    if (e.spriteEl) e.spriteEl.style.transform = `rotate(${angle}deg)`;
     e.hpFillEl.style.width = (Math.max(0, e.hp) / e.hpMax * 100) + '%';
     if (e.auraBuffed && !e.el.classList.contains('buffed')) e.el.classList.add('buffed');
     else if (!e.auraBuffed && e.el.classList.contains('buffed')) e.el.classList.remove('buffed');

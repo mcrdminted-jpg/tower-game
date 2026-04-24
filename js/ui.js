@@ -402,7 +402,7 @@ function renderLiveStats() {
       <div class="live-stat-cell"><div class="live-stat-label">Armor</div><div class="live-stat-val good">${(getDefenseFraction() * 100).toFixed(1)}%</div></div>
       <div class="live-stat-cell"><div class="live-stat-label">Lifesteal</div><div class="live-stat-val good">${(getLifestealFraction() * 100).toFixed(1)}%</div></div>
       <div class="live-stat-cell"><div class="live-stat-label">Regen</div><div class="live-stat-val good">${(getRegenPctPerSec() * 100).toFixed(2)}%/s</div></div>
-      <div class="live-stat-cell"><div class="live-stat-label">Range</div><div class="live-stat-val">${rangeLabel(game.upgrades.range.level)}</div></div>
+      <div class="live-stat-cell"><div class="live-stat-label">Range</div><div class="live-stat-val">${Math.round(getRange())}</div></div>
       <div class="live-stat-cell"><div class="live-stat-label">Multishot</div><div class="live-stat-val">${(getMultishotChance()*100).toFixed(0)}% · ×${getMultishotPower().toFixed(2)} · ${getMultishotTargets()}T</div></div>
       <div class="live-stat-cell"><div class="live-stat-label">Bounce</div><div class="live-stat-val">${(getBounceChance()*100).toFixed(0)}% · ×${getBouncePower().toFixed(2)} · ${getBounceTargets()}B</div></div>
       <div class="live-stat-cell"><div class="live-stat-label">Cash mul</div><div class="live-stat-val gold">×${getCashMul().toFixed(2)}</div></div>
@@ -1504,7 +1504,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.18 · Nav Fixes · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.19 · Battle Polish · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;
