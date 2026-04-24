@@ -653,6 +653,17 @@ function renderMenu() {
   // pick a tagline deterministically (doesn't change every render)
   const tag = TAGLINES[save.totalRuns % TAGLINES.length];
   document.getElementById('menuTagline').textContent = tag;
+
+  // v0.7.17: drive the home battlefield preview from the equipped skin
+  const previewCore = save.equippedCoreSkin || 'sentinel';
+  const previewBg = save.equippedBgSkin || 'cyber_grid';
+  document.body.setAttribute('data-preview-core', previewCore);
+  document.body.setAttribute('data-preview-bg', previewBg);
+  const coreNames = { sentinel:'SENTINEL', industrial:'INDUSTRIAL', verdant:'VERDANT',
+                      aegis:'AEGIS', frost:'FROST', royal:'ROYAL' };
+  const previewLabel = document.getElementById('menuPreviewLabel');
+  if (previewLabel) previewLabel.textContent = `CORE: ${coreNames[previewCore] || 'SENTINEL'}`;
+
   renderSubmenu();
 }
 
@@ -702,27 +713,38 @@ function renderLabsTab(c) {
   html += `<div style="color:var(--muted);font-size:10px;margin-bottom:8px;letter-spacing:0.5px;">PERMANENT UPGRADES · coin-bought · persist across runs</div>`;
 
   // Starter ranks (always visible)
-  html += `<div style="color:var(--accent);font-size:10px;letter-spacing:1px;margin-top:6px;font-weight:bold;">★ STARTER</div>`;
+  html += `<div class="lab-section-header starter">★ STARTER · ALWAYS UNLOCKED</div>`;
   const starterIds = ['damage','fireRate','coreHealth','armor','range','cashBonus'];
   for (const rid of starterIds) html += renderRankRow(rid);
 
   // Unlock families — either "owned, show ranks" or "purchase button"
+  const FAMILY_ICONS = {
+    critSystems:       { icon: '✦', color: 'var(--gold)' },
+    economyExpansion:  { icon: '$', color: 'var(--gold)' },
+    sustainSystems:    { icon: '✚', color: 'var(--good)' },
+    multishotSystems:  { icon: '↟', color: 'var(--good)' },
+    bounceSystems:     { icon: '⤢', color: 'var(--purple)' },
+    comboSystems:      { icon: '⚡', color: 'var(--gold)' }
+  };
   const orderedFamilies = Object.values(UNLOCK_FAMILIES).sort((a,b) => a.order - b.order);
   for (const fam of orderedFamilies) {
     if (familyIsOwned(fam.id)) {
-      html += `<div style="color:var(--good);font-size:10px;letter-spacing:1px;margin-top:12px;font-weight:bold;">✓ ${fam.name.toUpperCase()} · UNLOCKED</div>`;
+      html += `<div class="lab-section-header unlocked">✓ ${fam.name.toUpperCase()} · UNLOCKED</div>`;
       for (const rid of fam.unlocks) {
         if (RANK_DEFS[rid]) html += renderRankRow(rid);
       }
     } else {
       const can = save.coins >= fam.cost;
+      const meta = FAMILY_ICONS[fam.id] || { icon: '🔒', color: 'var(--muted)' };
       html += `
-        <div class="lab" style="border-color:${can ? 'var(--accent)' : 'var(--accent-dim)'};margin-top:12px;">
+        <div class="lab" style="border-color:${can ? 'var(--accent)' : 'var(--accent-dim)'};margin-top:8px;">
+          <div class="lab-icon-tile" style="color:${meta.color};border-color:${meta.color}">${meta.icon}</div>
           <div class="lab-header">
             <span class="lab-name">🔒 ${fam.name}</span>
             <span class="lab-level">LOCKED</span>
           </div>
           <div class="lab-desc">Unlocks: ${fam.unlocks.map(r => RANK_DEFS[r] ? RANK_DEFS[r].name : r).join(', ')}</div>
+          <div class="lab-stat">&nbsp;</div>
           <button class="lab-buy" data-unlock="${fam.id}" ${can ? '' : 'disabled'}>
             Unlock · ${formatNum(fam.cost)} coins
           </button>
@@ -759,6 +781,28 @@ function renderLabsTab(c) {
   });
 }
 
+// v0.7.17: icon + color per rank for the tile-at-left mockup look
+const RANK_ICON_META = {
+  damage:        { icon: '🚀', color: 'var(--danger)' },
+  fireRate:      { icon: '⏫', color: 'var(--accent)' },
+  coreHealth:    { icon: '♥',  color: 'var(--danger)' },
+  armor:         { icon: '🛡', color: 'var(--accent)' },
+  range:         { icon: '◎',  color: 'var(--accent)' },
+  cashBonus:     { icon: '$',  color: 'var(--gold)' },
+  critChance:    { icon: '✦',  color: 'var(--gold)' },
+  critPower:     { icon: '✸',  color: 'var(--danger)' },
+  waveBonus:     { icon: '≋',  color: 'var(--gold)' },
+  bossBounty:    { icon: '♛',  color: 'var(--gold)' },
+  regen:         { icon: '✚',  color: 'var(--good)' },
+  lifesteal:     { icon: '☖',  color: 'var(--good)' },
+  multiChance:   { icon: '↟',  color: 'var(--good)' },
+  multiPower:    { icon: '⇧',  color: 'var(--good)' },
+  multiTargets:  { icon: '⋮⋮', color: 'var(--accent)' },
+  bounceChance:  { icon: '⤢',  color: 'var(--purple)' },
+  bouncePower:   { icon: '⤨',  color: 'var(--purple)' },
+  bounceTargets: { icon: '⋰⋱', color: 'var(--purple)' }
+};
+
 function renderRankRow(rid) {
   const def = RANK_DEFS[rid];
   const entry = save.ranks[rid] || { level: 0 };
@@ -767,14 +811,15 @@ function renderRankRow(rid) {
   const can = save.coins >= cost && !maxed;
   const curBonus = rankFlatBonus(rid);
   const nextBonus = (entry.level + 1) * def.flatPerRank;
-  // Format the "+bonus" string based on magnitude
   const fmt = (v) => {
     if (Math.abs(v) < 0.01) return v.toFixed(4);
     if (Math.abs(v) < 1) return v.toFixed(3);
     return v.toFixed(1);
   };
+  const meta = RANK_ICON_META[rid] || { icon: '◆', color: 'var(--accent)' };
   return `
-    <div class="lab">
+    <div class="lab" style="--rank-color:${meta.color}">
+      <div class="lab-icon-tile" style="color:${meta.color};border-color:${meta.color}">${meta.icon}</div>
       <div class="lab-header">
         <span class="lab-name">${def.name}</span>
         <span class="lab-level">Rank ${entry.level} / ${def.maxRank}</span>
@@ -804,8 +849,19 @@ function renderMilestonesTab(c) {
     readyCounts[t] = n;
   }
 
+  // v0.7.17: Tier hex progression bar — all 18 tiers, scrollable horizontally
+  let html = `<div class="tier-hex-strip">`;
+  for (let t = 1; t <= MAX_TIER; t++) {
+    const state = t > unlockedTier ? 'locked'
+                : t === activeGoalTier ? 'current'
+                : 'unlocked';
+    const badge = readyCounts[t] > 0 ? `<span class="tier-hex-badge">${readyCounts[t]}</span>` : '';
+    html += `<button class="tier-hex ${state}" data-ghex="${t}" ${t > unlockedTier ? 'disabled' : ''}>T${t}${badge}</button>`;
+  }
+  html += `</div>`;
+
   // Tier tab bar (horizontal scroll if many tiers)
-  let html = `<div class="goal-tier-tabs">`;
+  html += `<div class="goal-tier-tabs">`;
   for (let t = 1; t <= unlockedTier; t++) {
     const badge = readyCounts[t] > 0 ? `<span class="goal-tier-badge">${readyCounts[t]}</span>` : '';
     html += `<button class="goal-tier-tab ${activeGoalTier === t ? 'active' : ''}" data-gt="${t}">T${t}${badge}</button>`;
@@ -838,6 +894,16 @@ function renderMilestonesTab(c) {
   }
 
   c.innerHTML = html;
+  c.querySelectorAll('.tier-hex').forEach(h => {
+    if (h.disabled) return;
+    h.addEventListener('click', () => {
+      const t = parseInt(h.dataset.ghex);
+      if (t && t <= highestUnlockedTier()) {
+        activeGoalTier = t;
+        renderMilestonesTab(c);
+      }
+    });
+  });
   c.querySelectorAll('.goal-tier-tab').forEach(t => {
     t.addEventListener('click', () => {
       activeGoalTier = parseInt(t.dataset.gt);
@@ -1429,7 +1495,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.16 · Lipstick · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.17 · Sprites + Art · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;

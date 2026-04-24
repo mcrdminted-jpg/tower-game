@@ -1,8 +1,30 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.16 "Lipstick"
+  CORE SURGE: Endless Tower Defense — v0.7.17 "Sprites + Art"
   =======================================================================
+  v0.7.17 changes:
+  - Battle sprites wired: all 12 enemy PNGs replace the old CSS circles.
+    Scouts, runners, tanks, shooters, augmenters, elites, and bosses
+    each have their own sprite art with glow + drop-shadows.
+  - Projectile sprites: normal shots use proj_spear_cyan, crits use
+    proj_star_gold, bounce shots use proj_plasma_violet, and enemy
+    shots use missile_bullet_fire.
+  - Home screen: new isometric battlefield preview showing your
+    equipped core on your equipped background, with decorative enemies
+    bobbing around and a rotating range ring. The label updates to
+    show your current core name.
+  - Research ranks: every rank row now has a bold icon hex-tile on
+    the left, colored to match the stat's theme (red for damage,
+    gold for cash, purple for bounce, etc.).
+  - Goals tab: new tier hex progression strip at the top showing all
+    T1-T18 with locked/unlocked/current states. Scroll horizontally
+    to see endgame tiers. Ready-to-claim badges show on hexes too.
+  - Store Starter Pack banner gets a gold-star decoration in the
+    background.
+  - Settings gets a theme preview block (uses current background +
+    core art).
+
   v0.7.16 changes:
   - Visual overhaul matching new mockup designs.
   - Top HUD: 4 stat cards (Coins / Gems / Best / Runs) with colored
@@ -216,7 +238,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.16</title>
+<title>Core Surge — v0.7.17</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">
@@ -259,6 +281,19 @@
     </div>
     <button class="start-btn" id="startBtn">Begin Defense</button>
   </div>
+
+  <!-- Home battlefield preview (decorative; shows equipped core + bg) -->
+  <div class="menu-preview" id="menuPreview">
+    <div class="menu-preview-bg" id="menuPreviewBg"></div>
+    <div class="menu-preview-core" id="menuPreviewCore"></div>
+    <div class="menu-preview-enemy menu-preview-enemy-1"></div>
+    <div class="menu-preview-enemy menu-preview-enemy-2"></div>
+    <div class="menu-preview-enemy menu-preview-enemy-3"></div>
+    <div class="menu-preview-enemy menu-preview-enemy-4"></div>
+    <div class="menu-preview-ring"></div>
+    <div class="menu-preview-label" id="menuPreviewLabel">CORE: SENTINEL</div>
+  </div>
+
   <div class="submenu" id="submenu">
     <button class="submenu-btn active" data-tab="labs">Ranks</button>
     <button class="submenu-btn" data-tab="milestones">Goals</button>

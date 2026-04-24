@@ -128,3 +128,73 @@
 .skin-tile[data-kind="bg"][data-skin="industrial"] .skin-preview { background-image: url("../assets/backgrounds/bg_02_industrial.png") !important; }
 .skin-tile[data-kind="bg"][data-skin="organic"]    .skin-preview { background-image: url("../assets/backgrounds/bg_03_organic.png") !important; }
 .skin-tile[data-kind="bg"][data-skin="steel"]      .skin-preview { background-image: url("../assets/backgrounds/bg_04_steel.png") !important; }
+
+/* ============================================================
+   ENEMY SPRITES (v0.7.17)
+   Replace the flat CSS-circle enemies with real sprite PNGs.
+   The existing .enemy rules still set position/size/glow; the
+   background color is overridden here with an image.
+   ============================================================ */
+.enemy {
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-color: transparent !important;
+  border: none !important;
+  image-rendering: -webkit-optimize-contrast;
+}
+.enemy.normal    { background-image: url("../assets/enemies/enemy_01_scout_cyan.png");    width: 28px !important; height: 28px !important; }
+.enemy.fast      { background-image: url("../assets/enemies/enemy_02_runner_orange.png"); width: 26px !important; height: 26px !important; }
+.enemy.tank      { background-image: url("../assets/enemies/enemy_03_tank_green.png");    width: 38px !important; height: 38px !important; }
+.enemy.shooter   { background-image: url("../assets/enemies/enemy_04_shooter_violet.png"); width: 30px !important; height: 30px !important; }
+.enemy.augmenter { background-image: url("../assets/enemies/enemy_08_warden_gold.png");   width: 34px !important; height: 34px !important; }
+.enemy.elite     { background-image: url("../assets/enemies/enemy_11_elite_ember.png");   width: 36px !important; height: 36px !important; }
+.enemy.boss      { background-image: url("../assets/enemies/enemy_12_boss_void.png");     width: 72px !important; height: 72px !important; animation: boss-pulse-sprite 1.4s infinite ease-in-out; }
+
+/* HP bar adjustments for sprite sizes */
+.enemy-hp { bottom: -8px !important; width: 26px !important; }
+.enemy.tank .enemy-hp { width: 32px !important; }
+.enemy.elite .enemy-hp { width: 32px !important; }
+.enemy.boss .enemy-hp { bottom: -12px !important; width: 60px !important; height: 4px !important; }
+
+/* Drop shadow so sprites pop against the bg */
+.enemy { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.enemy.boss { filter: drop-shadow(0 0 12px rgba(180,90,255,0.5)) drop-shadow(0 4px 6px rgba(0,0,0,0.7)); }
+
+@keyframes boss-pulse-sprite {
+  0%,100% { transform: translate(-50%, -50%) scale(1); }
+  50%     { transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* Buff ring when augmenter boosts a neighbor */
+.enemy.buffed {
+  filter: drop-shadow(0 0 8px rgba(68,255,136,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.5)) !important;
+}
+
+/* ============================================================
+   PROJECTILE SPRITES (v0.7.17)
+   ============================================================ */
+.projectile {
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  width: 18px !important; height: 18px !important;
+  background-image: url("../assets/vfx/proj_spear_cyan.png");
+  filter: drop-shadow(0 0 4px rgba(0,220,255,0.5));
+}
+.projectile.crit {
+  background-image: url("../assets/vfx/proj_star_gold.png");
+  width: 22px !important; height: 22px !important;
+  filter: drop-shadow(0 0 6px rgba(255,204,0,0.6));
+}
+.projectile.bounce {
+  background-image: url("../assets/vfx/proj_plasma_violet.png");
+  filter: drop-shadow(0 0 5px rgba(170,80,255,0.5));
+}
+.projectile.enemy {
+  background-image: url("../assets/vfx/missile_bullet_fire.png");
+  width: 14px !important; height: 14px !important;
+  filter: drop-shadow(0 0 4px rgba(255,100,50,0.5));
+}

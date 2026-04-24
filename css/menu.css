@@ -271,10 +271,12 @@
   margin-top: 6px;
   padding-left: 4px;
 }
+.lab-section-header.unlocked { color: var(--good); }
+.lab-section-header.starter  { color: var(--gold); }
 
 .lab {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 52px 1fr auto;
   gap: 10px;
   align-items: center;
   background: linear-gradient(180deg, rgba(18, 28, 48, 0.7), rgba(10, 16, 28, 0.85));
@@ -282,11 +284,26 @@
   border-radius: 12px;
   padding: 12px 12px;
 }
+.lab-icon-tile {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  width: 46px;
+  height: 46px;
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: bold;
+  background: linear-gradient(180deg, rgba(0,240,255,0.1), rgba(0,80,140,0.02));
+  box-shadow: inset 0 0 10px rgba(0,220,255,0.1);
+}
 .lab-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  grid-column: 1 / 3;
+  grid-column: 2 / 4;
   margin-bottom: 4px;
 }
 .lab-name {
@@ -301,20 +318,20 @@
   letter-spacing: 1px;
 }
 .lab-desc {
-  grid-column: 1;
+  grid-column: 2;
   font-size: 10px;
   color: var(--muted);
   line-height: 1.35;
 }
 .lab-stat {
-  grid-column: 1;
+  grid-column: 2;
   font-size: 10px;
   color: var(--accent);
   margin-top: 2px;
   letter-spacing: 0.5px;
 }
 .lab-buy {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 2 / 4;
   min-width: 100px;
   background: linear-gradient(180deg, #00d0ee 0%, #0080b0 100%);
@@ -950,4 +967,266 @@
   cursor: pointer;
   z-index: 60;
   white-space: nowrap;
+}
+
+/* ==================== HOME BATTLEFIELD PREVIEW (v0.7.17) ==================== */
+.menu-preview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid var(--accent-dim);
+  margin-bottom: 16px;
+  box-shadow: 0 0 calc(var(--glow-on) * 20px) rgba(0,180,255,0.18);
+  background: #080d1a;
+}
+.menu-preview-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-image: url("../assets/backgrounds/bg_01_cyber_grid.png");
+  filter: brightness(0.7) saturate(0.9);
+}
+.menu-preview-core {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  background-image: url("../assets/cores/core_01_sentinel.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0 14px rgba(0,220,255,0.6)) drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+  z-index: 3;
+  animation: preview-float 3s ease-in-out infinite;
+}
+@keyframes preview-float {
+  0%,100% { transform: translate(-50%, -50%); }
+  50%     { transform: translate(-50%, calc(-50% - 4px)); }
+}
+.menu-preview-ring {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 150px;
+  height: 150px;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgba(0,220,255,0.4);
+  border-radius: 50%;
+  z-index: 1;
+  animation: preview-ring 8s linear infinite;
+}
+@keyframes preview-ring {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.menu-preview-enemy {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  z-index: 2;
+}
+.menu-preview-enemy-1 {
+  background-image: url("../assets/enemies/enemy_01_scout_cyan.png");
+  left: 18%;
+  top: 30%;
+  animation: preview-bob-1 3.2s ease-in-out infinite;
+}
+.menu-preview-enemy-2 {
+  background-image: url("../assets/enemies/enemy_02_runner_orange.png");
+  left: 82%;
+  top: 32%;
+  animation: preview-bob-2 3.8s ease-in-out infinite;
+}
+.menu-preview-enemy-3 {
+  background-image: url("../assets/enemies/enemy_03_tank_green.png");
+  left: 15%;
+  top: 72%;
+  animation: preview-bob-3 4.4s ease-in-out infinite;
+  width: 28px;
+  height: 28px;
+}
+.menu-preview-enemy-4 {
+  background-image: url("../assets/enemies/enemy_07_reaver_crimson.png");
+  left: 78%;
+  top: 75%;
+  animation: preview-bob-1 3.6s ease-in-out infinite;
+  width: 26px;
+  height: 26px;
+}
+@keyframes preview-bob-1 {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+@keyframes preview-bob-2 {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(4px); }
+}
+@keyframes preview-bob-3 {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-3px); }
+}
+.menu-preview-label {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  z-index: 4;
+}
+
+/* Override core/bg preview based on equipped skin */
+body[data-preview-core="sentinel"]   #menuPreviewCore { background-image: url("../assets/cores/core_01_sentinel.png"); }
+body[data-preview-core="industrial"] #menuPreviewCore { background-image: url("../assets/cores/core_02_industrial.png"); }
+body[data-preview-core="verdant"]    #menuPreviewCore { background-image: url("../assets/cores/core_03_verdant.png"); }
+body[data-preview-core="aegis"]      #menuPreviewCore { background-image: url("../assets/cores/core_04_aegis.png"); }
+body[data-preview-core="frost"]      #menuPreviewCore { background-image: url("../assets/cores/core_05_frost.png"); }
+body[data-preview-core="royal"]      #menuPreviewCore { background-image: url("../assets/cores/core_06_royal.png"); }
+body[data-preview-bg="cyber_grid"]   #menuPreviewBg { background-image: url("../assets/backgrounds/bg_01_cyber_grid.png"); }
+body[data-preview-bg="industrial"]   #menuPreviewBg { background-image: url("../assets/backgrounds/bg_02_industrial.png"); }
+body[data-preview-bg="organic"]      #menuPreviewBg { background-image: url("../assets/backgrounds/bg_03_organic.png"); }
+body[data-preview-bg="steel"]        #menuPreviewBg { background-image: url("../assets/backgrounds/bg_04_steel.png"); }
+
+/* ==================== SHOP FEATURED BANNER ART (v0.7.17) ==================== */
+.shop-featured {
+  position: relative;
+  overflow: hidden;
+}
+.shop-featured::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 140px;
+  height: 140px;
+  background-image: url("../assets/vfx/proj_star_gold.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0 20px rgba(255,204,0,0.5));
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
+}
+.shop-featured > * { position: relative; z-index: 1; }
+
+/* ==================== GOALS REWARD CHEST (v0.7.17) ==================== */
+.goal-reward-art {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-image: url("../assets/vfx/pickup_coin.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0 12px rgba(255,204,0,0.5));
+}
+
+/* ==================== SETTINGS THEME PREVIEW (v0.7.17) ==================== */
+.settings-theme-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid var(--accent-dim);
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-image: url("../assets/backgrounds/bg_02_industrial.png");
+  margin-bottom: 10px;
+}
+.settings-theme-preview::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  aspect-ratio: 1;
+  background-image: url("../assets/cores/core_01_sentinel.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 10px rgba(0,220,255,0.6));
+}
+
+/* ==================== TIER HEX STRIP (Goals tab, v0.7.17) ==================== */
+.tier-hex-strip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  margin-bottom: 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tier-hex-strip::-webkit-scrollbar { display: none; }
+.tier-hex {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--accent-dim);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--muted);
+  background: rgba(15, 25, 45, 0.5);
+  position: relative;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tier-hex.unlocked {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+  background: rgba(0, 240, 255, 0.05);
+}
+.tier-hex.current {
+  border-color: var(--accent);
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.22), rgba(0, 140, 200, 0.08));
+  box-shadow: 0 0 calc(var(--glow-on) * 14px) var(--accent);
+  transform: scale(1.08);
+}
+.tier-hex.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.tier-hex.locked::after {
+  content: '🔒';
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 9px;
+  opacity: 0.85;
+}
+.tier-hex:active:not(:disabled) { transform: scale(0.96); }
+.tier-hex.current:active { transform: scale(1.02); }
+.tier-hex-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--danger);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: bold;
+  box-shadow: 0 0 6px var(--danger);
+  min-width: 14px;
+  text-align: center;
 }
