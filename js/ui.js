@@ -570,14 +570,42 @@ function wireGlobalNav() {
   document.querySelectorAll('.global-nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.nav;
-      // If we're in battle AND overlay is already showing this tab, toggle it off.
+
+      // HOME: return to main menu (tier picker view). If mid-battle, close overlay first.
+      if (target === 'home') {
+        if (isOverlayActive()) closeMenuOverlay();
+        if (!game.running) {
+          activeSubmenu = 'labs';
+          showScreen('menu');
+          renderMenu();
+        }
+        updateGlobalNavActive();
+        return;
+      }
+
+      // BATTLE: jump back to the active battle. If no battle running, do nothing visible
+      // (the user would start one from Begin Defense on home).
+      if (target === 'battle') {
+        if (game.running) {
+          closeMenuOverlay();
+          updateGlobalNavActive();
+        }
+        return;
+      }
+
+      // MORE: open a sheet listing Store / Goals / Tourney / Skins / Settings
+      if (target === 'more') {
+        openMoreSheet();
+        return;
+      }
+
+      // Otherwise it's a submenu target (labs/cards etc.)
       if (game.running && isOverlayActive() && activeSubmenu === target) {
         closeMenuOverlay();
         return;
       }
       activeSubmenu = target;
       if (game.running) {
-        // Mid-battle: overlay menu on top of battlefield. Run continues.
         openMenuOverlay();
       } else {
         renderSubmenu();
@@ -587,6 +615,63 @@ function wireGlobalNav() {
   });
   const rtb = document.getElementById('returnToBattleBtn');
   if (rtb) rtb.addEventListener('click', closeMenuOverlay);
+}
+
+// The "MORE" sheet — a popover of the less-frequent tabs.
+function openMoreSheet() {
+  let sheet = document.getElementById('moreSheet');
+  if (!sheet) {
+    sheet = document.createElement('div');
+    sheet.id = 'moreSheet';
+    sheet.className = 'more-sheet';
+    sheet.innerHTML = `
+      <div class="more-sheet-backdrop"></div>
+      <div class="more-sheet-panel">
+        <div class="more-sheet-title">MORE</div>
+        <div class="more-sheet-grid">
+          <button class="more-sheet-btn" data-more="shop">
+            <span class="more-sheet-icon">🛒</span>
+            <span class="more-sheet-label">STORE</span>
+          </button>
+          <button class="more-sheet-btn" data-more="milestones">
+            <span class="more-sheet-icon">🎯</span>
+            <span class="more-sheet-label">GOALS</span>
+          </button>
+          <button class="more-sheet-btn" data-more="tournament">
+            <span class="more-sheet-icon">🏆</span>
+            <span class="more-sheet-label">TOURNEY</span>
+          </button>
+          <button class="more-sheet-btn" data-more="skins">
+            <span class="more-sheet-icon">🎨</span>
+            <span class="more-sheet-label">SKINS</span>
+          </button>
+          <button class="more-sheet-btn" data-more="settings">
+            <span class="more-sheet-icon">⚙</span>
+            <span class="more-sheet-label">SETTINGS</span>
+          </button>
+        </div>
+        <button class="more-sheet-close">CLOSE</button>
+      </div>
+    `;
+    document.body.appendChild(sheet);
+    sheet.querySelector('.more-sheet-backdrop').addEventListener('click', closeMoreSheet);
+    sheet.querySelector('.more-sheet-close').addEventListener('click', closeMoreSheet);
+    sheet.querySelectorAll('.more-sheet-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.more;
+        activeSubmenu = target;
+        closeMoreSheet();
+        if (game.running) openMenuOverlay();
+        else { renderSubmenu(); showScreen('menu'); }
+      });
+    });
+  }
+  sheet.classList.add('visible');
+}
+
+function closeMoreSheet() {
+  const sheet = document.getElementById('moreSheet');
+  if (sheet) sheet.classList.remove('visible');
 }
 
 // Show the menu as an overlay on top of an active battle. The battle
@@ -617,11 +702,18 @@ function isOverlayActive() {
   return menu && menu.classList.contains('overlay') && menu.classList.contains('active');
 }
 
-// Highlight the current submenu tab in the global nav
+// Highlight the current nav button based on what's showing.
 function updateGlobalNavActive() {
   const onMenu = document.getElementById('screen-menu').classList.contains('active');
+  const inBattle = game.running && !isOverlayActive();
   document.querySelectorAll('.global-nav-btn').forEach(btn => {
-    const match = onMenu && btn.dataset.nav === activeSubmenu;
+    const nav = btn.dataset.nav;
+    let match = false;
+    if (nav === 'home')    match = onMenu && !isOverlayActive();
+    else if (nav === 'battle')  match = inBattle;
+    else if (nav === 'labs')    match = onMenu && activeSubmenu === 'labs';
+    else if (nav === 'cards')   match = onMenu && activeSubmenu === 'cards';
+    else if (nav === 'more')    match = false; // more is a sheet trigger, never "active"
     btn.classList.toggle('active', match);
   });
 }
@@ -1504,7 +1596,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.19 · Battle Polish · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.20 · Nav Redesign · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;

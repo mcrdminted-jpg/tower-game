@@ -902,8 +902,6 @@
   white-space: nowrap;
   text-transform: uppercase;
 }
-.global-nav-btn[data-nav="skins"],
-.global-nav-btn[data-nav="tournament"] { display: none; }
 
 /* ==================== SETTINGS ==================== */
 .settings-section {
@@ -1245,3 +1243,101 @@ body[data-preview-bg="steel"]        #menuPreviewBg { background-image: url("../
   min-width: 14px;
   text-align: center;
 }
+
+/* ==================== MORE SHEET (v0.7.20) ==================== */
+.more-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+}
+.more-sheet.visible { display: block; }
+.more-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: sheet-fade 0.2s ease-out;
+}
+@keyframes sheet-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.more-sheet-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(12, 20, 36, 0.98), rgba(6, 10, 20, 1));
+  border-top: 2px solid var(--accent);
+  border-radius: 18px 18px 0 0;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 30px rgba(0, 220, 255, 0.2);
+  animation: sheet-slide 0.25s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes sheet-slide {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.more-sheet-title {
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 4px;
+  font-weight: 900;
+  color: var(--accent);
+  margin-bottom: 14px;
+  text-shadow: 0 0 calc(var(--glow-on) * 10px) var(--accent);
+}
+.more-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.more-sheet-btn {
+  background: linear-gradient(180deg, rgba(20, 30, 50, 0.85), rgba(12, 18, 32, 0.9));
+  border: 1.5px solid var(--accent-dim);
+  color: var(--text);
+  padding: 12px 4px 10px;
+  border-radius: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 68px;
+  transition: all 0.15s;
+}
+.more-sheet-btn:active {
+  transform: scale(0.95);
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.15), rgba(0, 140, 200, 0.08));
+}
+.more-sheet-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+.more-sheet-label {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.more-sheet-close {
+  width: 100%;
+  background: transparent;
+  border: 1.5px solid var(--accent-dim);
+  color: var(--muted);
+  padding: 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.more-sheet-close:active { background: rgba(255,255,255,0.05); }

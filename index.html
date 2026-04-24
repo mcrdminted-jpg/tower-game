@@ -1,8 +1,21 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.19 "Battle Polish"
+  CORE SURGE: Endless Tower Defense — v0.7.20 "Nav Redesign"
   =======================================================================
+  v0.7.20 changes:
+  - FIXED: duplicate STORE and SETTINGS in the bottom nav. Bottom
+    nav is now the 5-tab mockup layout: HOME / BATTLE / RESEARCH /
+    LOADOUT / MORE.
+  - MORE opens a bottom sheet with STORE / GOALS / TOURNEY / SKINS /
+    SETTINGS as large icon tiles. Tap one and it routes to the
+    corresponding panel.
+  - HOME tab returns to the main menu (tier picker).
+  - BATTLE tab jumps back to the active battle when in an overlay.
+  - The 7-icon full grid in the submenu area (RANKS/GOALS/LOADOUT/
+    TOURNEY/STORE/SKINS/SETTINGS) still exists for power-users who
+    want all tabs in one view.
+
   v0.7.19 changes:
   - Tower now truly centered on the battlefield (was 55% — now 50%).
   - Enemies rotate to face the tower each frame. Sprite art points
@@ -256,7 +269,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.19</title>
+<title>Core Surge — v0.7.20</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">
@@ -398,33 +411,25 @@
 
 <!-- PERSISTENT BOTTOM NAV (always visible) -->
 <div class="global-nav" id="globalNav">
+  <button class="global-nav-btn" data-nav="home">
+    <span class="global-nav-icon">⌂</span>
+    <span class="global-nav-label">HOME</span>
+  </button>
+  <button class="global-nav-btn" data-nav="battle">
+    <span class="global-nav-icon">⚔</span>
+    <span class="global-nav-label">BATTLE</span>
+  </button>
   <button class="global-nav-btn" data-nav="labs">
     <span class="global-nav-icon">🧪</span>
-    <span class="global-nav-label">RANKS</span>
-  </button>
-  <button class="global-nav-btn" data-nav="milestones">
-    <span class="global-nav-icon">🎯</span>
-    <span class="global-nav-label">GOALS</span>
+    <span class="global-nav-label">RESEARCH</span>
   </button>
   <button class="global-nav-btn" data-nav="cards">
-    <span class="global-nav-icon">🎴</span>
+    <span class="global-nav-icon">🛡</span>
     <span class="global-nav-label">LOADOUT</span>
   </button>
-  <button class="global-nav-btn" data-nav="tournament">
-    <span class="global-nav-icon">🏆</span>
-    <span class="global-nav-label">TOURNEY</span>
-  </button>
-  <button class="global-nav-btn" data-nav="shop">
-    <span class="global-nav-icon">🛒</span>
-    <span class="global-nav-label">STORE</span>
-  </button>
-  <button class="global-nav-btn" data-nav="skins">
-    <span class="global-nav-icon">🎨</span>
-    <span class="global-nav-label">SKINS</span>
-  </button>
-  <button class="global-nav-btn" data-nav="settings">
-    <span class="global-nav-icon">⚙</span>
-    <span class="global-nav-label">SETTINGS</span>
+  <button class="global-nav-btn" data-nav="more">
+    <span class="global-nav-icon">⋯</span>
+    <span class="global-nav-label">MORE</span>
   </button>
 </div>
 
