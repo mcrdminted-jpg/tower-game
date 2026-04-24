@@ -570,6 +570,11 @@ function wireGlobalNav() {
   document.querySelectorAll('.global-nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.nav;
+      // If we're in battle AND overlay is already showing this tab, toggle it off.
+      if (game.running && isOverlayActive() && activeSubmenu === target) {
+        closeMenuOverlay();
+        return;
+      }
       activeSubmenu = target;
       if (game.running) {
         // Mid-battle: overlay menu on top of battlefield. Run continues.
@@ -590,6 +595,8 @@ function openMenuOverlay() {
   const menu = document.getElementById('screen-menu');
   menu.classList.add('overlay');
   menu.classList.add('active');
+  const rtb = document.getElementById('returnToBattleBtn');
+  if (rtb) rtb.classList.add('visible');
   renderSubmenu();
   updateGlobalNavActive();
 }
@@ -599,6 +606,8 @@ function closeMenuOverlay() {
   const menu = document.getElementById('screen-menu');
   menu.classList.remove('overlay');
   menu.classList.remove('active');
+  const rtb = document.getElementById('returnToBattleBtn');
+  if (rtb) rtb.classList.remove('visible');
   updateGlobalNavActive();
 }
 
@@ -1495,7 +1504,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.17 · Sprites + Art · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.18 · Nav Fixes · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;

@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <!--
   =======================================================================
-  CORE SURGE: Endless Tower Defense — v0.7.17 "Sprites + Art"
+  CORE SURGE: Endless Tower Defense — v0.7.18 "Nav Fixes"
   =======================================================================
+  v0.7.18 changes:
+  - FIXED: tapping a bottom nav button mid-battle now properly opens
+    the menu overlay AND you can return by tapping the same button
+    again, or using the big cyan "Return to Battle" bar at the top.
+  - FIXED: menu overlay during battle now fully covers the battle
+    screen instead of rendering below it.
+  - FIXED: upgrade panel in battle no longer gets clipped by the
+    bottom nav — battle screen now reserves space for the nav.
+  - Return-to-battle bar is now big, glowy, and obvious. Shows live
+    HP/wave so you know the battle is still going on behind it.
+
   v0.7.17 changes:
   - Battle sprites wired: all 12 enemy PNGs replace the old CSS circles.
     Scouts, runners, tanks, shooters, augmenters, elites, and bosses
@@ -238,7 +249,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Core Surge — v0.7.17</title>
+<title>Core Surge — v0.7.18</title>
 <!-- CSS: modular, split for AI co-work. See /css/*.css.
      theme.css must come first (defines :root vars used by others). -->
 <link rel="stylesheet" href="css/theme.css">

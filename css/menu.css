@@ -13,6 +13,18 @@
   -webkit-overflow-scrolling: touch;
 }
 #screen-menu.active { display: flex; }
+/* When overlaying an active battle, layer on top of the battle screen
+   and cover it fully. Bottom nav stays above overlay via its z-index. */
+#screen-menu.overlay {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--bg);
+  padding-top: 0;
+}
 
 /* ==================== RETURN-TO-BATTLE ==================== */
 .return-to-battle {
@@ -20,23 +32,26 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  width: 100%;
-  padding: 10px 14px;
-  background: linear-gradient(180deg, rgba(0,240,255,0.14), rgba(0,240,255,0.06));
-  border: 1px solid var(--accent);
-  border-radius: 0 0 10px 10px;
+  width: calc(100% + 28px);
+  margin: 0 -14px 14px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(0,240,255,0.22), rgba(0,240,255,0.10));
+  border: none;
+  border-bottom: 2px solid var(--accent);
   color: var(--accent);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 220, 255, 0.3);
 }
 .return-to-battle.visible { display: flex; }
-.return-to-battle-hp { color: var(--text); font-weight: 500; font-size: 10px; }
+.return-to-battle-hp { color: var(--text); font-weight: 500; font-size: 11px; }
+.return-to-battle:active { transform: translateY(1px); }
 
 /* ==================== MENU HERO ==================== */
 .menu-bg { display: none; }
