@@ -461,16 +461,43 @@ function renderHud() {
     const bDev = document.getElementById('hudBattleDevBtn');
     if (bDev) bDev.addEventListener('click', openDevPanel);
   } else {
-    const devBtn = save.settings.devMode ? `<button class="hud-btn" style="border-color:var(--gold);color:var(--gold);padding:6px 8px" id="hudDevBtn">⚙</button>` : '';
+    const devBtn = save.settings.devMode ? `<button class="hud-dev-pill" id="hudDevBtn">⚙</button>` : '';
     hud.innerHTML = `
       ${devBtn}
-      <div class="hud-cell"><span class="hud-label">Coins</span><span class="hud-value gold">${formatNum(save.coins)}</span></div>
-      <div class="hud-cell"><span class="hud-label">Gems</span><span class="hud-value purple">${formatNum(save.gems)}</span></div>
-      <div class="hud-cell"><span class="hud-label">Best</span><span class="hud-value good">T${save.bestTier}·W${save.bestWave}</span></div>
-      <div class="hud-cell"><span class="hud-label">Runs</span><span class="hud-value">${save.totalRuns}</span></div>
+      <div class="hud-stat-card hud-stat-coins">
+        <div class="hud-stat-icon">⊙</div>
+        <div class="hud-stat-body">
+          <div class="hud-stat-value">${formatNum(save.coins)}</div>
+          <div class="hud-stat-label">COINS</div>
+        </div>
+      </div>
+      <div class="hud-stat-card hud-stat-gems" id="hudGemsCard">
+        <div class="hud-stat-icon">◆</div>
+        <div class="hud-stat-body">
+          <div class="hud-stat-value">${formatNum(save.gems)}</div>
+          <div class="hud-stat-label">GEMS</div>
+        </div>
+        <div class="hud-stat-plus">+</div>
+      </div>
+      <div class="hud-stat-card hud-stat-best">
+        <div class="hud-stat-icon">🏆</div>
+        <div class="hud-stat-body">
+          <div class="hud-stat-value">W${save.bestWave || 0}</div>
+          <div class="hud-stat-label">BEST</div>
+        </div>
+      </div>
+      <div class="hud-stat-card hud-stat-runs">
+        <div class="hud-stat-icon">⎍</div>
+        <div class="hud-stat-body">
+          <div class="hud-stat-value">${save.totalRuns}</div>
+          <div class="hud-stat-label">RUNS</div>
+        </div>
+      </div>
     `;
     const dev = document.getElementById('hudDevBtn');
     if (dev) dev.addEventListener('click', openDevPanel);
+    const gemCard = document.getElementById('hudGemsCard');
+    if (gemCard) gemCard.addEventListener('click', () => { activeSubmenu = 'shop'; renderSubmenu(); });
   }
   // Side buttons (battlefield left/right) are wired independently — they exist outside hud,
   // see wireBattlefieldSideButtons(). Re-wire on every HUD refresh is not needed.
@@ -634,13 +661,32 @@ function renderSubmenu() {
     b.classList.toggle('active', b.dataset.tab === activeSubmenu);
   });
   const c = document.getElementById('submenuContent');
-  if (activeSubmenu === 'labs')       renderLabsTab(c);
-  else if (activeSubmenu === 'milestones') renderMilestonesTab(c);
-  else if (activeSubmenu === 'cards') renderCardsTab(c);
-  else if (activeSubmenu === 'shop')  renderShopTab(c);
-  else if (activeSubmenu === 'skins') renderSkinsTab(c);
-  else if (activeSubmenu === 'tournament') renderTournamentTab(c);
-  else if (activeSubmenu === 'settings') renderSettingsTab(c);
+  // v0.7.16: prepend a big neon panel title matching the mockup
+  const titles = {
+    labs:       { t: 'RESEARCH',   s: 'PERMANENT UPGRADES' },
+    milestones: { t: 'GOALS',      s: 'EARN REWARDS · GET STRONGER' },
+    cards:      { t: 'LOADOUT',    s: 'CARDS' },
+    shop:       { t: 'STORE',      s: 'GEMS · COINS · BOOSTERS' },
+    skins:      { t: 'SKINS',      s: 'CUSTOMIZE YOUR EXPERIENCE' },
+    tournament: { t: 'TOURNAMENT', s: 'COMPETE · RANK UP · EARN REWARDS' },
+    settings:   { t: 'SETTINGS',   s: 'CUSTOMIZE YOUR GAME' }
+  };
+  const info = titles[activeSubmenu];
+  const headerHTML = info
+    ? `<div class="panel-title">${info.t}</div><div class="panel-subtitle">${info.s}</div>`
+    : '';
+  c.innerHTML = headerHTML; // reset + set header first
+  const inner = document.createElement('div');
+  inner.className = 'panel-inner';
+  c.appendChild(inner);
+
+  if (activeSubmenu === 'labs')            renderLabsTab(inner);
+  else if (activeSubmenu === 'milestones') renderMilestonesTab(inner);
+  else if (activeSubmenu === 'cards')      renderCardsTab(inner);
+  else if (activeSubmenu === 'shop')       renderShopTab(inner);
+  else if (activeSubmenu === 'skins')      renderSkinsTab(inner);
+  else if (activeSubmenu === 'tournament') renderTournamentTab(inner);
+  else if (activeSubmenu === 'settings')   renderSettingsTab(inner);
   updateGlobalNavActive();
 }
 
@@ -1383,7 +1429,7 @@ function renderSettingsTab(c) {
   // Version text — tap 7 times to unlock dev panel
   const ver = document.createElement('div');
   ver.style.cssText = 'text-align:center;color:var(--muted);font-size:9px;margin-top:12px;line-height:1.5;cursor:pointer;padding:10px;user-select:none';
-  const verDefault = 'Core Surge v0.7.15 · Ranks Foundation · tap 7× for dev tools';
+  const verDefault = 'Core Surge v0.7.16 · Lipstick · tap 7× for dev tools';
   ver.textContent = verDefault;
   let tapCount = 0;
   let tapTimer = null;

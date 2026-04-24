@@ -20,23 +20,120 @@
 
   /* ==================== TOP HUD ==================== */
   .hud {
-    background: var(--bg-2);
-    padding: 4px 6px;
+    background: linear-gradient(180deg, rgba(10, 15, 28, 0.95), rgba(6, 10, 18, 0.98));
+    padding: 8px 10px 10px;
     border-bottom: 1px solid var(--accent-dim);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     flex-shrink: 0;
     z-index: 10;
-    min-height: 42px;
+    min-height: 56px;
     position: relative;
   }
+  /* Legacy classes (still referenced in a few places, kept tiny) */
   .hud-cell { display: flex; flex-direction: column; align-items: center; gap: 0; flex: 1; min-width: 0; }
   .hud-label { color: var(--muted); font-size: 7px; text-transform: uppercase; letter-spacing: 1px; }
   .hud-value { color: var(--accent); font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
   .hud-value.gold { color: var(--gold); }
   .hud-value.good { color: var(--good); }
   .hud-value.purple { color: var(--purple); }
+
+  /* v0.7.16 HUD stat cards — mockup style */
+  .hud-stat-card {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(180deg, rgba(18, 28, 48, 0.8), rgba(10, 16, 28, 0.9));
+    border: 1.5px solid var(--accent-dim);
+    border-radius: 10px;
+    padding: 6px 8px;
+    position: relative;
+    min-height: 44px;
+  }
+  .hud-stat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .hud-stat-coins .hud-stat-icon {
+    background: linear-gradient(180deg, rgba(255, 204, 0, 0.2), rgba(180, 140, 0, 0.05));
+    border: 1px solid var(--gold);
+    color: var(--gold);
+  }
+  .hud-stat-gems .hud-stat-icon {
+    background: linear-gradient(180deg, rgba(180, 90, 255, 0.2), rgba(100, 40, 180, 0.05));
+    border: 1px solid var(--purple);
+    color: var(--purple);
+  }
+  .hud-stat-best .hud-stat-icon {
+    background: linear-gradient(180deg, rgba(0, 240, 255, 0.2), rgba(0, 140, 200, 0.05));
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .hud-stat-runs .hud-stat-icon {
+    background: linear-gradient(180deg, rgba(140, 220, 140, 0.2), rgba(60, 140, 80, 0.05));
+    border: 1px solid var(--good);
+    color: var(--good);
+  }
+  .hud-stat-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+  .hud-stat-value {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hud-stat-label {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .hud-stat-plus {
+    background: rgba(180, 90, 255, 0.15);
+    border: 1px solid var(--purple);
+    color: var(--purple);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .hud-dev-pill {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
   .hud-btn {
     background: var(--bg);
     border: 1px solid var(--danger);
